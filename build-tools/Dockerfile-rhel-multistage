@@ -1,0 +1,110 @@
+FROM registry.redhat.io/ubi8/ruby-25 AS rhel-builder
+
+# GOLANG install steps
+USER root
+ENV GOLANG_VERSION 1.15
+ENV GOLANG_SRC_URL https://golang.org/dl/go$GOLANG_VERSION.src.tar.gz
+ENV GOLANG_SRC_SHA256 69438f7ed4f532154ffaf878f3dfd83747e7a00b70b3556eddabf7aaee28ac3a
+
+RUN REPOLIST=rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-supplementary-rpms,rhel-8-for-x86_64-appstream-rpms && \
+	yum -y update-minimal --disablerepo "*" --enablerepo rhel-8-for-x86_64-baseos-rpms --setopt=tsflags=nodocs \
+	  --security --sec-severity=Important --sec-severity=Critical && \
+	yum -y install scl-utils cmake && \
+	gem install licensee --pre && \
+	yum -y install --disablerepo "*" --enablerepo ${REPOLIST} --setopt=tsflags=nodocs \
+	  gcc openssl golang git make rsync wget python3 && \
+# Add epel repo for dpkg install
+	curl -o epel-release-latest-8.noarch.rpm -SL https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm \
+            --retry 9 --retry-max-time 0 -C - && \
+	rpm -ivh epel-release-latest-8.noarch.rpm && rm epel-release-latest-8.noarch.rpm && \
+	yum -y install --disablerepo "*" --enablerepo epel --setopt=tsflags=nodocs dpkg && \
+	export GOROOT_BOOTSTRAP="$(go env GOROOT)" && \
+	wget -q "$GOLANG_SRC_URL" -O golang.tar.gz && \
+	echo "$GOLANG_SRC_SHA256  golang.tar.gz" | sha256sum -c - && \
+	tar -C /usr/local -xzf golang.tar.gz && \
+	rm golang.tar.gz && \
+	cd /usr/local/go/src && \
+	./make.bash && \
+	yum -y erase golang && \
+	yum clean all && \
+        alternatives --set python /usr/bin/python3
+
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+ENV BASE_PATH "$GOPATH/github.com/f5devcentral"
+RUN mkdir -p "$GOPATH/src" "$BASE_PATH" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+WORKDIR "$BASE_PATH/$REPO_NAME"
+
+ARG RUN_TESTS=false
+ARG COVERALLS_TOKEN
+ARG BUILD_VERSION
+ARG BUILD_INFO
+ARG LICENSE
+
+# install gosu
+# https://github.com/tianon/gosu/blob/master/INSTALL.md#from-centos
+ENV GOSU_VERSION 1.10
+RUN set -ex && \
+	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')" && \
+	wget -O /usr/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch" && \
+	wget -O /tmp/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc" && \
+# verify the signature
+	export GNUPGHOME="$(mktemp -d)" && \
+	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 && \
+	gpg --batch --verify /tmp/gosu.asc /usr/bin/gosu && \
+	rm -r "$GNUPGHOME" /tmp/gosu.asc && \
+	chmod +x /usr/bin/gosu && \
+# verify that the binary works
+	gosu nobody true
+
+# Copy Source code
+COPY ./$REPO_NAME $BASE_PATH
+
+RUN /bin/bash -ex $WORKDIR/f5-ipam-controller/build-tools/rel-build.sh
+
+
+FROM registry.redhat.io/ubi7/ubi-minimal as final
+
+LABEL name="f5networks/f5-ipam-controller" \
+      vendor="F5 Networks" \
+      # version - should be passed in via docker build
+      url="http://clouddocs.f5.com/products/connectors/f5-ipam-controller/latest/" \
+      summary="F5 BIG-IP Controller for Kubernetes" \
+      description="Manages F5 BIG-IP from Kubernetes" \
+      run='docker run --name ${NAME} ${IMAGE} /app/bin/f5-ipam-controller' \
+      io.k8s.description="Manages F5 BIG-IP from Kubernetes" \
+      io.k8s.display-name="F5 BIG-IP Controller for Kubernetes" \
+      io.openshift.expose-services="" \
+      io.openshift.tags="f5,f5networks,bigip,openshift,router"
+
+ENV APPPATH /app
+
+RUN mkdir -p "$APPPATH/bin" \
+ && chmod -R 755 "$APPPATH"
+
+WORKDIR $APPPATH
+ARG BUILD_INFO
+ARG VERSION_INFO
+
+COPY build-tools/help.md /tmp/
+#COPY LICENSE /licenses/
+
+RUN microdnf --enablerepo=rhel-7-server-rpms --enablerepo=rhel-7-server-optional-rpms \
+      --enablerepo=rhel-server-rhscl-7-rpms install --nodocs \
+      golang-github-cpuguy83-go-md2man rh-python36 git shadow-utils && \
+    microdnf update && \
+    microdnf --enablerepo=rhel-7-server-rpms update nss-tools nss-softokn nss-util && \
+    go-md2man -in /tmp/help.md -out /help.1 && rm -f /tmp/help.md && \
+    adduser ctlr && \
+    microdnf remove golang-github-cpuguy83-go-md2man git fipscheck fipscheck-lib  less libedit \
+    libgnome-keyring openssh openssh-clients  perl-Git  perl-TermReadKey  perl-macros  rsync shadow-utils && \
+    microdnf clean all \
+    && echo "{\"version\": \"${VERSION_INFO}\", \"build\": \"${BUILD_INFO}\"}" \
+          > $APPPATH/VERSION_BUILD.json
+
+COPY --from=rhel-builder "/go/out/bin/f5-ipam-controller" $APPPATH/bin
+
+USER ctlr
+
+# Run the run application in the projects bin directory.
+CMD [ "/app/bin/f5-ipam-controller" ]
