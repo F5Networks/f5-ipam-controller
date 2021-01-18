@@ -1,10 +1,12 @@
-# f5-ipam-controller
+# F5 IPAM Controller [ PREVIEW ]
 
-The F5 IPAM Controller is a Docker container that runs in an orchestration environment and interfaces with an IPAM system. It allocates IP addresses from an IPAM system’s address pool for hostnames in an orchestration environment. The F5 IPAM Controller watches orchestration-specific resources and consumes the hostnames within each resource.
+The F5 IPAM Controller is a Docker container that runs in an orchestration environment and interfaces with an IPAM system.
+It allocates IP addresses from an IPAM system’s address pool for hostnames in an orchestration environment.
+The F5 IPAM Controller watches orchestration-specific resources and consumes the hostnames within each resource.
 
-### The Controller can
+# In this Preview
 
-Allocate IP address from static IP address pool based on the CIDR mentioned in a Kubernetes resource The idea here is that we will support CRD, Type LB and probably also in the future route/ingress. We should make it more generic so that we don't have to update this later, F5 IPAM Controller decides to allocate the IP from the respective IP address pool for the hostname specified in the virtualserver custom resource.
+The F5 IPAM Controller can allocate IP address from static IP address pool based on the CIDR mentioned in a Kubernetes resource The idea here is that we will support CRD, Type LB and probably also in the future route/ingress. We should make it more generic so that we don't have to update this later, F5 IPAM Controller decides to allocate the IP from the respective IP address pool for the hostname specified in the virtualserver custom resource.
 
 
 ### F5 IPAM Deploy Configuration Options
@@ -17,15 +19,15 @@ Allocate IP address from static IP address pool based on the CIDR mentioned in a
 | ip-range | String | Required |  ip-range parameter holds the IP address ranges and from this range, it creates a pool of IP address range which gets allocated to the corresponding hostname in the virtual server CRD |
 | log-level | String | Optional |  Log level parameter specify various logging level such as DEBUG, INFO, WARNING, ERROR, CRITICAL. |
 
-Example:
+***Example***
+
  ```
  - --orchestration=kubernetes
-- --ip-range=" 10.10.10.0/24-10.10.10.0/26"
-- --log-level=debug
+ - --ip-range=" 10.10.10.0/24-10.10.10.0/26"
+ - --log-level=DEBUG // log-level can be INFO, DEBUG, WARNING, ERROR and CRITICAL.
 ```
-Log level parameter specify various logging level such as DEBUG, INFO, WARNING, ERROR, CRITICAL.
 
-#### Below is the RBAC for F5 IPAM Controller:
+#### RBAC -  ServiceAccount, ClusterRole and ClusterRoleBindings for F5 IPAM Controller
 ```
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -58,7 +60,7 @@ metadata:
   namespace: kube-system
 ```
 
-#### F5 IPAM Deployment example:
+#### Example: F5 IPAM Controller Deployment YAML
 
 ```
 apiVersion: apps/v1
@@ -91,22 +93,25 @@ spec:
       serviceAccount: ipam-ctlr
       serviceAccountName: ipam-ctlr
 ```
-#### Deploy RBAC and F5 IPAM Controller deployment
+
+#### Deploying RBAC and F5 IPAM Controller 
+
+Using kubectl let's apply the above defined RBAC and Deployment definitions.
+
 ```
 kubectl create -f f5-ipam-rbac.yaml
 kubectl create -f f5-ipam-deployment.yaml
 ```
 
-### Prerequisites:
-- CIS >= v2.2.2
 
 ### Configuring CIS to work with F5 IPAM Controller
 
 To configure CIS to work with the F5 IPAM controller, the user needs to give a parameter ```--ipam=true``` in the CIS deployment and also provide a parameter ```cidr``` in the virtual server CRD.
 
-Examples:
+#### Examples
 
-Virtual Server CRD:
+**Virtual Server CRD**
+
 ```
 apiVersion: "cis.f5.com/v1"
 kind: VirtualServer
@@ -122,7 +127,9 @@ spec:
    service: svc-2
    servicePort: 80
 ```
-CIS Deployment with ipam enabled:
+
+**CIS Deployment with ipam enabled**
+
 ```
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -169,7 +176,9 @@ The user needs to mandatorily provide the host and CIDR in the hostSpecs section
 - F5-ipam-controller (FIC) acts as a communication channel for updating the host, IP, and CIDR in VS CRD.
 
 Below is the example: 
+
 - f5-ipam-cr.yaml
+
 ```
 apiVersion: "fic.f5.com/v1"
 kind: F5IPAM
