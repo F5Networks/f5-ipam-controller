@@ -1,4 +1,4 @@
-# f5-ipam-controller for CIS 2.2.2
+# f5-ipam-controller
 
 The F5 IPAM Controller is a Docker container that runs in an orchestration environment and interfaces with an IPAM system. It allocates IP addresses from an IPAM system’s address pool for hostnames in an orchestration environment. The F5 IPAM Controller watches orchestration-specific resources and consumes the hostnames within each resource.
 
@@ -8,15 +8,19 @@ Allocate IP address from static IP address pool based on the CIDR mentioned in a
 
 
 ### F5 IPAM Deploy Configuration Options
+
+**Deployment Options**
+
+| PARAMETER | TYPE | REQUIRED | DESCRIPTION |
+| ------ | ------ | ------ | ------ |
+| orchestration | String | Required | The orchestration parameter holds the orchestration environment i.e. Kubernetes. |
+| ip-range | String | Required |  ip-range parameter holds the IP address ranges and from this range, it creates a pool of IP address range which gets allocated to the corresponding hostname in the virtual server CRD |
+| log-level | String | Optional |  Log level parameter specify various logging level such as DEBUG, INFO, WARNING, ERROR, CRITICAL. |
+
+Example:
  ```
  - --orchestration=kubernetes
- ```
-The orchestration parameter holds the orchestration environment i.e. Kubernetes.
-```
-- --ip-range=" 172.16.3.17/28-172.16.3.30/28,172.16.3.33/28-172.16.3.46/28"
-```
-ip-range parameter holds the IP address ranges and from this range, it creates a pool of IP address range which gets allocated to the corresponding hostname in the virtual server CRD.
-```
+- --ip-range=" 10.10.10.0/24-10.10.10.0/26"
 - --log-level=debug
 ```
 Log level parameter specify various logging level such as DEBUG, INFO, WARNING, ERROR, CRITICAL.
@@ -54,7 +58,7 @@ metadata:
   namespace: kube-system
 ```
 
-#### Deployment example:
+#### F5 IPAM Deployment example:
 
 ```
 apiVersion: apps/v1
@@ -77,7 +81,7 @@ spec:
       containers:
       - args:
         - --orchestration=kubernetes
-        - --ip-range="172.16.3.17/28-172.16.3.30/28,172.16.3.33/28-172.16.3.46/28"
+        - --ip-range="10.10.10.0/24-10.10.10.0/26"
         - --log-level=DEBUG
         command:
         - /app/bin/f5-ipam-controller
@@ -93,11 +97,65 @@ kubectl create -f f5-ipam-rbac.yaml
 kubectl create -f f5-ipam-deployment.yaml
 ```
 
+### Prerequisites:
+- CIS >= v2.2.2
 
 ### Configuring CIS to work with F5 IPAM Controller
 
+To configure CIS to work with the F5 IPAM controller, the user needs to give a parameter ```--ipam=true``` in the CIS deployment and also provide a parameter ```cidr``` in the virtual server CRD.
 
-To configure CIS to work with the F5 IPAM controller, the user needs to give a parameter ```--ipam=true``` in the CIS deployment and also provide a parameter CIDR: "10.10.10.10/24" in the virtual server CRD.
+Examples:
+
+Virtual Server CRD:
+```
+apiVersion: "cis.f5.com/v1"
+kind: VirtualServer
+metadata:
+ name: coffee-virtual-server
+ labels:
+   f5cr: "true"
+spec:
+ host: coffee.example.com
+ cidr: "10.10.10.0/24"
+ pools:
+ - path: /coffee
+   service: svc-2
+   servicePort: 80
+```
+CIS Deployment with ipam enabled:
+```
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: k8s-bigip-ctlr-deployment
+  namespace: kube-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: k8s-bigip-ctlr
+      labels:
+        app: k8s-bigip-ctlr
+    spec:
+      serviceAccountName: bigip-ctlr
+      containers:
+        - name: k8s-bigip-ctlr
+          image: "f5networks/k8s-bigip-ctlr"
+          command: ["/app/bin/k8s-bigip-ctlr"]
+          args: [
+            "--bigip-username=$(BIGIP_USERNAME)",
+            "--bigip-password=$(BIGIP_PASSWORD)",
+            "--bigip-url=<ip_address-or-hostname>",
+            "--bigip-partition=<name_of_partition>",
+            "--pool-member-type=nodeport",
+            "--agent=as3",
+            "--ipam=true", //Enable IPAM 
+            ]
+      imagePullSecrets:
+        - name: f5-docker-images
+        - name: bigip-login
+```
+
 
 - NOTE: If the user provides the parameter ```--ipam=true``` in the CIS deployment then it is mandatory to provide the CIDR parameter in virtualserver CRD and also the virtualserver CRD should not have virtualServerAddress parameter.
 
@@ -109,6 +167,30 @@ The main aim of IPAM is to provide an IP address corresponding to each hostname 
 The user needs to mandatorily provide the host and CIDR in the hostSpecs section of F5-CR. The F5 IPAM Controller, in turn, reads the hostSpecs of CR, processes it, and updates the IPStatus with each host provided in the hostSpecs with host, IP(which is generated from the range of IP address by FIC), and corresponding CIDR.
 
 - F5-ipam-controller (FIC) acts as a communication channel for updating the host, IP, and CIDR in VS CRD.
+
+Below is the example: 
+- f5-ipam-cr.yaml
+```
+apiVersion: "fic.f5.com/v1"
+kind: F5IPAM
+metadata:
+  name: f5ipam.sample
+  namespace: kube-system
+spec:
+  hostSpecs:
+  - host: cafe.example.com
+    cidr: 10.10.10.0/24
+  - host: tea.example.com
+    cidr: 10.10.10.0/24
+status:
+  IPStatus:
+  - host: cafe.example.com
+    ip: 10.10.10.45
+    cidr: 10.10.10.0/24
+  - host: tea.example.com
+    ip: 10.10.10.47
+    cidr: 10.10.10.0/24
+```
 
  ### Limitations
 
