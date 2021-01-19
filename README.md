@@ -19,15 +19,11 @@ The F5 IPAM Controller can allocate IP address from static IP address pool based
 | ip-range | String | Required |  ip-range parameter holds the IP address ranges and from this range, it creates a pool of IP address range which gets allocated to the corresponding hostname in the virtual server CRD |
 | log-level | String | Optional |  Log level parameter specify various logging level such as DEBUG, INFO, WARNING, ERROR, CRITICAL. |
 
-***Example***
+Note: On how to configure these Configuration Options, please refer to IPAM Deployment YAML example in below.
 
- ```
- - --orchestration=kubernetes
- - --ip-range=" 10.10.10.0/24-10.10.10.0/26"
- - --log-level=DEBUG // log-level can be INFO, DEBUG, WARNING, ERROR and CRITICAL.
-```
 
 #### RBAC -  ServiceAccount, ClusterRole and ClusterRoleBindings for F5 IPAM Controller
+
 ```
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -83,11 +79,11 @@ spec:
       containers:
       - args:
         - --orchestration=kubernetes
-        - --ip-range="10.10.10.0/24-10.10.10.0/26"
+        - --ip-range="10.192.75.111/24-10.192.75.115/24"
         - --log-level=DEBUG
         command:
         - /app/bin/f5-ipam-controller
-        image: f5Networks/f5-ipam-controller
+        image: f5devcentral/f5-ipam-controller
         imagePullPolicy: IfNotPresent
         name: f5-ipam-controller
       serviceAccount: ipam-ctlr
@@ -121,7 +117,7 @@ metadata:
    f5cr: "true"
 spec:
  host: coffee.example.com
- cidr: "10.10.10.0/24"
+ cidr: "10.192.75.111/24"
  pools:
  - path: /coffee
    service: svc-2
@@ -188,17 +184,17 @@ metadata:
 spec:
   hostSpecs:
   - host: cafe.example.com
-    cidr: 10.10.10.0/24
+    cidr: 10.192.75.111/24
   - host: tea.example.com
-    cidr: 10.10.10.0/24
+    cidr: 10.192.75.111/24
 status:
   IPStatus:
   - host: cafe.example.com
-    ip: 10.10.10.45
-    cidr: 10.10.10.0/24
+    ip: 10.192.75.112
+    cidr: 10.192.75.111/24
   - host: tea.example.com
-    ip: 10.10.10.47
-    cidr: 10.10.10.0/24
+    ip: 10.192.75.114
+    cidr: 10.192.75.111/24
 ```
 
  ### Limitations
@@ -206,6 +202,4 @@ status:
 - F5-ipam-controller cannot update and delete the hostname in the F5-IPAM custom resource hence update and deletion of IP address for virtual server custom may not work as expected. In case if the user wants to reflect the changes, the user can delete the F5-IPAM custom resource from kube-system named "f5ipam" and restart both the controller.
 - Currently, F5 IPAM Controller does not support the update of CIDR and hostname.
 - If F5-IPAM Controller is misconfigured after it allocates few IPs for VS CR. It will remove all its entry from the IPStatus. After the user reconfigured with the correct one, FIC may not get the previous same IPs for the hostname 
-
-
-
+- `--ip-range` parameter will be improved to accept IP address range from a subnet, range of multiple subnets and range of IP addresses separated by a dash '-'.
