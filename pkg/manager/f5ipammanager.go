@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"fmt"
 	"net"
 	"strings"
 
@@ -16,14 +17,13 @@ type IPAMManager struct {
 	provider *provider.IPAMProvider
 }
 
-func NewIPAMManager(params IPAMManagerParams) *IPAMManager {
+func NewIPAMManager(params IPAMManagerParams) (*IPAMManager, error) {
 	provParams := provider.Params{Range: params.Range}
 	prov := provider.NewProvider(provParams)
 	if prov == nil {
-		log.Error("[IPMG] Unable to create Provider")
-		return nil
+		return nil, fmt.Errorf("[IPMG] Unable to create Provider")
 	}
-	return &IPAMManager{provider: prov}
+	return &IPAMManager{provider: prov}, nil
 }
 
 // Creates an A record

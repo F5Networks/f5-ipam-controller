@@ -8,12 +8,12 @@ import (
 	"strings"
 	"syscall"
 
-	flag "github.com/spf13/pflag"
 	"github.com/f5devcentral/f5-ipam-controller/pkg/controller"
 	"github.com/f5devcentral/f5-ipam-controller/pkg/manager"
 	"github.com/f5devcentral/f5-ipam-controller/pkg/orchestration"
 	log "github.com/f5devcentral/f5-ipam-controller/pkg/vlogger"
 	clog "github.com/f5devcentral/f5-ipam-controller/pkg/vlogger/console"
+	flag "github.com/spf13/pflag"
 )
 
 const (
@@ -95,7 +95,6 @@ func verifyArgs() error {
 
 	*orch = strings.ToLower(*orch)
 	*provider = strings.ToLower(*provider)
-
 	if len(*iprange) == 0 && *provider == DefaultProvider {
 		return fmt.Errorf("IP Range not provider for Provider: %v", DefaultProvider)
 	}
@@ -127,9 +126,12 @@ func main() {
 		IPAMManagerParams: manager.IPAMManagerParams{Range: *iprange},
 	}
 	mgrParams.Range = *iprange
-	mgr := manager.NewManager(mgrParams)
+	mgr, err := manager.NewManager(mgrParams)
+	if err != nil {
+		log.Errorf("Unable to initialize manager: %v", err)
+		os.Exit(1)
+	}
 	stopCh := make(chan struct{})
-
 	ctlr := controller.NewController(
 		controller.Spec{
 			Orchestrator: orcr,
