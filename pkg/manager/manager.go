@@ -1,6 +1,9 @@
 package manager
 
-import log "github.com/f5devcentral/f5-ipam-controller/pkg/vlogger"
+import (
+	"fmt"
+	log "github.com/f5devcentral/f5-ipam-controller/pkg/vlogger"
+)
 
 // Manager defines the interface that the IPAM system should implement
 type Manager interface {
@@ -25,7 +28,7 @@ type Params struct {
 	IPAMManagerParams
 }
 
-func NewManager(params Params) Manager {
+func NewManager(params Params) (Manager, error) {
 	switch params.Provider {
 	case F5IPAMProvider:
 		log.Debugf("[MGR] Creating Manager with Provider: %v", F5IPAMProvider)
@@ -34,5 +37,5 @@ func NewManager(params Params) Manager {
 	default:
 		log.Errorf("[MGR] Unknown Provider: %v", params.Provider)
 	}
-	return nil
+	return nil, fmt.Errorf("manager cannot be initialized")
 }
