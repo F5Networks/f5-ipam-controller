@@ -1,13 +1,29 @@
-# F5 IPAM Controller [ PREVIEW ]
+# F5 IPAM Controller
 
 The F5 IPAM Controller is a Docker container that runs in an orchestration environment and interfaces with an IPAM system.
 It allocates IP addresses from an IPAM system’s address pool for hostnames in an orchestration environment.
 The F5 IPAM Controller watches orchestration-specific resources and consumes the hostnames within each resource.
 
-# In this Preview
+# In this IPAM
 
 The F5 IPAM Controller can allocate IP address from static IP address pool based on the CIDR mentioned in a Kubernetes resource The idea here is that we will support CRD, Type LB and probably also in the future route/ingress. We should make it more generic so that we don't have to update this later, F5 IPAM Controller decides to allocate the IP from the respective IP address pool for the hostname specified in the virtualserver custom resource.
 
+Supported kubernetes resource : 
+| RESOURCES | MINIMUM VERSION SUPPORTED |
+| ------ | ------ |
+| VS CRD | CIS v2.2.2 | 
+
+
+
+# Setup Diagram and Details
+
+### Architectural diagram of how F5-IPAM-Controller(FIC) fits in the environment
+
+![alt text](./image/img-1.png)
+The F5 IPAM Controller acts as an interface to CIS to provide an IP address from a pool of IP's to each hostname provided in the virtual server CRD.
+
+### Flow Chart for CIS-FIC working 
+![alt text](./image/img-2.png)
 
 ### F5 IPAM Deploy Configuration Options
 
@@ -21,7 +37,7 @@ The F5 IPAM Controller can allocate IP address from static IP address pool based
 
 Note: On how to configure these Configuration Options, please refer to IPAM Deployment YAML example in below.
 
-
+### Installation
 #### RBAC -  ServiceAccount, ClusterRole and ClusterRoleBindings for F5 IPAM Controller
 
 ```
@@ -160,7 +176,10 @@ spec:
 ```
 
 
-- NOTE: If the user provides the parameter ```--ipam=true``` in the CIS deployment then it is mandatory to provide the CIDR parameter in virtualserver CRD and also the virtualserver CRD should not have virtualServerAddress parameter.
+#### NOTE: 
+- If the user provides the parameter ```--ipam=true``` in the CIS deployment then it is mandatory to provide the CIDR parameter in VS CRD to leverage the the IPAM Controller.
+- If a VirtualServer Address is specified in the resource, CIS don't leverage the IPAM Controller even if a  CIDR parameter is specified
+- If No VirtualServer Address is specified in the resource and a CIDR parameter is specified, CIS leverage the IPAM Controller for VS address.
 
 ### Updating the Status in Virtual Server CRD
 
@@ -199,7 +218,19 @@ status:
 
  ### Limitations
 
-- F5-ipam-controller cannot update and delete the hostname in the F5-IPAM custom resource hence update and deletion of IP address for virtual server custom may not work as expected. In case if the user wants to reflect the changes, the user can delete the F5-IPAM custom resource from kube-system named "f5ipam" and restart both the controller.
-- Currently, F5 IPAM Controller does not support the update of CIDR and hostname.
-- If F5-IPAM Controller is misconfigured after it allocates few IPs for VS CR. It will remove all its entry from the IPStatus. After the user reconfigured with the correct one, FIC may not get the previous same IPs for the hostname 
-- `--ip-range` parameter will be improved to accept IP address range from a subnet, range of multiple subnets and range of IP addresses separated by a dash '-'.
+1. Single IPAM Controller does not work with multiple CIS deployment.
+2. Sometime IPAM missed to allocate an IP for a domain when CIS is restarted.
+3. Sometime IPAM fails to allocate new IP address when CIDR is updated.
+
+For 2 and 3:  
+Mitigation: In this case the user can delete the F5-IPAM custom resource from kube-system named `"ipam.<Partition_Name>"` and restart both the controller.
+
+`kubectl delete f5ipam ipam.<Partition_Name> -n kube-system`
+
+
+### Known Issue
+- Observing error log when IPAM is not enabled in CIS.
+
+`[ERROR] [ipam] error while retriving IPAM namespace and name.`
+
+- IPAM Controller logs does not contain any build information
