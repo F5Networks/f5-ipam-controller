@@ -65,7 +65,7 @@ func (ctlr *Controller) runController() {
 				break
 			}
 
-			ipAddr := ctlr.Manager.GetIPAddress(req.HostName)
+			ipAddr := ctlr.Manager.GetIPAddress(req.CIDR, req.HostName)
 			if ipAddr != "" {
 				go sendResponse(req, ipAddr)
 				break
@@ -78,7 +78,7 @@ func (ctlr *Controller) runController() {
 				go sendResponse(req, ipAddr)
 			}
 		case ipamspec.DELETE:
-			ipAddr := ctlr.Manager.GetIPAddress(req.HostName)
+			ipAddr := ctlr.Manager.GetIPAddress(req.CIDR, req.HostName)
 			if ipAddr != "" {
 				ctlr.Manager.ReleaseIPAddress(ipAddr)
 				ctlr.Manager.DeleteARecord(req.HostName, ipAddr)

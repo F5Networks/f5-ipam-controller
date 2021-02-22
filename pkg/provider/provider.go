@@ -167,8 +167,17 @@ func (prov *IPAMProvider) DeleteARecord(hostname, ipAddr string) {
 	log.Debugf("[PROV] Deleted 'A' Record. Host:%v, IP:%v", hostname, ipAddr)
 }
 
-func (prov *IPAMProvider) GetIPAddress(hostname string) string {
-	return prov.store.GetIPAddress(hostname)
+func (prov *IPAMProvider) GetIPAddress(cidr, hostname string) string {
+	if _, ok := prov.cidrs[cidr]; !ok {
+		log.Debugf("[PROV] Unsupported CIDR: %v", cidr)
+		return ""
+	}
+	ipAddr := prov.store.GetIPAddress(hostname)
+	if doesCIDRContainIP(cidr, ipAddr) {
+		return ipAddr
+	}
+
+	return ""
 }
 
 // Gets and reserves the next available IP address
@@ -187,6 +196,18 @@ func (prov *IPAMProvider) AllocateIPAddress(cidr, ipAddr string) bool {
 		return false
 	}
 
+	if doesCIDRContainIP(cidr, ipAddr) {
+		return prov.store.MarkIPAsAllocated(cidr, ipAddr)
+	}
+	return false
+}
+
+// Releases an IP address
+func (prov *IPAMProvider) ReleaseAddr(ipAddr string) {
+	prov.store.ReleaseIP(ipAddr)
+}
+
+func doesCIDRContainIP(cidr, ipAddr string) bool {
 	_, ipNet, err := net.ParseCIDR(cidr)
 	if err != nil {
 		log.Debugf("[PROV] Parsing CIDR error : ", err)
@@ -197,13 +218,5 @@ func (prov *IPAMProvider) AllocateIPAddress(cidr, ipAddr string) bool {
 		log.Debugf("[PROV] Parsing IP error")
 		return false
 	}
-	if ipNet.Contains(ip) {
-		return prov.store.MarkIPAsAllocated(cidr, ipAddr)
-	}
-	return false
-}
-
-// Releases an IP address
-func (prov *IPAMProvider) ReleaseAddr(ipAddr string) {
-	prov.store.ReleaseIP(ipAddr)
+	return ipNet.Contains(ip)
 }
