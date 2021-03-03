@@ -12,7 +12,7 @@ type Manager interface {
 	// Deletes an A record and releases the IP address
 	DeleteARecord(hostname, ipAddr string)
 	// Gets IP Address associated with hostname
-	GetIPAddress(hostname string) string
+	GetIPAddress(cidr, hostname string) string
 	// Gets and reserves the next available IP address
 	GetNextIPAddress(cidr string) string
 	// Allocates this particular ip from the CIDR
