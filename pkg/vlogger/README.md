@@ -1,6 +1,6 @@
 # vlogger
 
-    import "github.com/f5devcentral/f5-ipam-controller/pkg/vlogger"
+    import "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
 
 Package vlogger implements an interface around basic logging features so that
 end-user and library writers can code to the interface without worrying about
@@ -115,8 +115,8 @@ statements to the console:
     package main
 
     import (
-      log  "github.com/f5devcentral/f5-ipam-controller/pkg/vlogger"
-      "github.com/f5devcentral/f5-ipam-controller/pkg/vlogger/console"
+      log  "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
+      "github.com/F5Networks/f5-ipam-controller/pkg/vlogger/console"
 
     func init() {
       // Log all messages to the user's console

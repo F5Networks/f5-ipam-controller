@@ -54,7 +54,7 @@ RUN set -eux; \
 
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
-ENV BASE_PATH "$GOPATH/src/github.com/f5devcentral"
+ENV BASE_PATH "$GOPATH/src/github.com/F5Networks"
 RUN mkdir -p "$GOPATH/src" "$BASE_PATH" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 WORKDIR "$BASE_PATH/$REPO_NAME"
 

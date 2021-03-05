@@ -23,9 +23,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned"
-	fic "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/informers/externalversions/fic"
-	internalinterfaces "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/informers/externalversions/internalinterfaces"
+	versioned "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned"
+	fic "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/informers/externalversions/fic"
+	internalinterfaces "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/informers/externalversions/internalinterfaces"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

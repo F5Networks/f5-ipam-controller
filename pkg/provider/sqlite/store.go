@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
-	log "github.com/f5devcentral/f5-ipam-controller/pkg/vlogger"
+	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
 )
 
 type DBStore struct {

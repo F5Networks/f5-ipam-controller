@@ -19,7 +19,7 @@ limitations under the License.
 package v1
 
 import (
-	internalinterfaces "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/informers/externalversions/internalinterfaces"
+	internalinterfaces "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.

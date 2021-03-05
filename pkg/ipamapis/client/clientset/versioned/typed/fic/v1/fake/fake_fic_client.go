@@ -19,7 +19,7 @@ limitations under the License.
 package fake
 
 import (
-	v1 "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned/typed/fic/v1"
+	v1 "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned/typed/fic/v1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )

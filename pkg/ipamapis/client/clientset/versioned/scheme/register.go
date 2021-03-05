@@ -19,7 +19,7 @@ limitations under the License.
 package scheme
 
 import (
-	k8sv1 "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/apis/fic/v1"
+	k8sv1 "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/apis/fic/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

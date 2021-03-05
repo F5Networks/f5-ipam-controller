@@ -5,8 +5,8 @@ import (
 	"net"
 	"strings"
 
-	"github.com/f5devcentral/f5-ipam-controller/pkg/provider"
-	log "github.com/f5devcentral/f5-ipam-controller/pkg/vlogger"
+	"github.com/F5Networks/f5-ipam-controller/pkg/provider"
+	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
 )
 
 type IPAMManagerParams struct {
