@@ -42,7 +42,7 @@ func (store *DBStore) CreateTables() bool {
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 		"ipaddress" TEXT,
 		"status" INT,
-		"cidr" TEXT	
+		"cidr_tag" TEXT	
 	  );`
 
 	statement, _ := store.db.Prepare(createIPAddressTableSQL)
@@ -67,13 +67,13 @@ func (store *DBStore) CreateTables() bool {
 	return true
 }
 
-func (store *DBStore) InsertIP(ips []string, cidr string) {
-	for _, j := range ips {
-		insertIPSQL := `INSERT INTO ipaddress_range(ipaddress, status, cidr) VALUES (?, ?, ?)`
+func (store *DBStore) InsertIP(ips []string, cidrTag string) {
+	for _, ip := range ips {
+		insertIPSQL := `INSERT INTO ipaddress_range(ipaddress, status, cidr_tag) VALUES (?, ?, ?)`
 
 		statement, _ := store.db.Prepare(insertIPSQL)
 
-		_, err := statement.Exec(j, AVAILABLE, cidr)
+		_, err := statement.Exec(ip, AVAILABLE, cidrTag)
 		if err != nil {
 			log.Error("[STORE] Unable to Insert row in Table 'ipaddress_range'")
 		}
@@ -96,20 +96,20 @@ func (store *DBStore) DisplayIPRecords() {
 		var id int
 		var ipaddress string
 		var status int
-		var cidr string
-		row.Scan(&id, &ipaddress, &status, &cidr)
-		log.Debugf("[STORE] ipaddress_range: %v\t %v\t%v\t%v", id, ipaddress, status, cidr)
+		var cidrTag string
+		row.Scan(&id, &ipaddress, &status, &cidrTag)
+		log.Debugf("[STORE] ipaddress_range: %v\t %v\t%v\t%v", id, ipaddress, status, cidrTag)
 	}
 }
 
-func (store *DBStore) AllocateIP(cidr string) string {
+func (store *DBStore) AllocateIP(cidrTag string) string {
 	var ipaddress string
 	var id int
 
 	queryString := fmt.Sprintf(
-		"SELECT ipaddress,id FROM ipaddress_range where status=%d AND cidr=\"%s\" order by id ASC limit 1",
+		"SELECT ipaddress,id FROM ipaddress_range where status=%d AND cidr_tag=\"%s\" order by id ASC limit 1",
 		AVAILABLE,
-		cidr,
+		cidrTag,
 	)
 	err := store.db.QueryRow(queryString).Scan(&ipaddress, &id)
 	if err != nil {
@@ -127,13 +127,13 @@ func (store *DBStore) AllocateIP(cidr string) string {
 	return ipaddress
 }
 
-func (store *DBStore) MarkIPAsAllocated(cidr, ipAddr string) bool {
+func (store *DBStore) MarkIPAsAllocated(cidrTag, ipAddr string) bool {
 	var id int
 
 	queryString := fmt.Sprintf(
-		"SELECT id FROM ipaddress_range where status=%d AND cidr=\"%s\" AND ipaddress=\"%s\" order by id ASC limit 1",
+		"SELECT id FROM ipaddress_range where status=%d AND cidr_tag=\"%s\" AND ipaddress=\"%s\" order by id ASC limit 1",
 		AVAILABLE,
-		cidr,
+		cidrTag,
 		ipAddr,
 	)
 	err := store.db.QueryRow(queryString).Scan(&id)
@@ -153,8 +153,9 @@ func (store *DBStore) MarkIPAsAllocated(cidr, ipAddr string) bool {
 	return true
 }
 
-func (store *DBStore) GetIPAddress(hostname string) string {
+func (store *DBStore) GetIPAddress(cidrTag, hostname string) string {
 	var ipaddress string
+	var status int
 
 	queryString := fmt.Sprintf(
 		"SELECT ipaddress FROM a_records where hostname=\"%s\" order by ipaddress ASC limit 1",
@@ -162,9 +163,18 @@ func (store *DBStore) GetIPAddress(hostname string) string {
 	)
 	err := store.db.QueryRow(queryString).Scan(&ipaddress)
 	if err != nil {
-		log.Infof("[STORE] No A record with Host: %v", hostname)
 		return ""
 	}
+
+	queryString = fmt.Sprintf("SELECT status FROM ipaddress_range where ipaddress=%s AND cidr_tag=\"%s\" order by id ASC limit 1",
+		ipaddress,
+		cidrTag,
+	)
+	err = store.db.QueryRow(queryString).Scan(&status)
+	if err != nil || status == AVAILABLE {
+		return ""
+	}
+
 	return ipaddress
 }
 

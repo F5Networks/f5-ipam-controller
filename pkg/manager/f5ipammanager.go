@@ -63,41 +63,32 @@ func (ipMgr *IPAMManager) DeleteARecord(req ipamspec.IPAMRequest) {
 }
 
 func (ipMgr *IPAMManager) GetIPAddress(req ipamspec.IPAMRequest) string {
-	if req.CIDR == "" || (req.HostName == "" && req.Key == "") {
+	if req.CIDRTag == "" || (req.HostName == "" && req.Key == "") {
 		log.Errorf("[IPMG] Invalid Request to Get IP Address: %v", req.String())
 		return ""
 	}
-	if !isValidCIDR(req.CIDR) {
-		log.Debugf("[IPMG] Unable to Get IP Address, as Invalid CIDR Provided: %v", req.CIDR)
-		return ""
-	}
+
 	if req.Key != "" {
-		return ipMgr.provider.GetIPAddress(req.CIDR, req.Key)
+		return ipMgr.provider.GetIPAddress(req.CIDRTag, req.Key)
 	}
 	// TODO: Validate hostname to be a proper dns hostname
-	return ipMgr.provider.GetIPAddress(req.CIDR, req.HostName)
+	return ipMgr.provider.GetIPAddress(req.CIDRTag, req.HostName)
 }
 
 // Gets and reserves the next available IP address
 func (ipMgr *IPAMManager) GetNextIPAddress(req ipamspec.IPAMRequest) string {
-	if !isValidCIDR(req.CIDR) {
-		log.Debugf("[IPMG] Unable to Get Next IP Address, as Invalid CIDR Provided: %v", req.CIDR)
-		return ""
-	}
-	return ipMgr.provider.GetNextAddr(req.CIDR)
+
+	return ipMgr.provider.GetNextAddr(req.CIDRTag)
 }
 
-// Allocates this particular ip from the CIDR
+// Allocates this particular ip from the CIDR Tag
 func (ipMgr *IPAMManager) AllocateIPAddress(req ipamspec.IPAMRequest) bool {
 	if req.CIDR == "" || req.IPAddr == "" {
 		log.Errorf("[IPMG] Invalid Request to Allocate IP Address: %v", req.String())
 		return false
 	}
-	if !isValidCIDR(req.CIDR) {
-		log.Debugf("[IPMG] Unable to Allocate IP Address, as Invalid CIDR Provided: %v", req.CIDR)
-		return false
-	}
-	return ipMgr.provider.AllocateIPAddress(req.CIDR, req.IPAddr)
+
+	return ipMgr.provider.AllocateIPAddress(req.CIDRTag, req.IPAddr)
 }
 
 // Releases an IP address
@@ -122,16 +113,5 @@ func isIPV4Addr(ipAddr string) bool {
 		return false
 	}
 
-	return true
-}
-
-func isValidCIDR(cidr string) bool {
-	if cidr == "" {
-		return false
-	}
-	_, _, err := net.ParseCIDR(cidr)
-	if err != nil {
-		return false
-	}
 	return true
 }
