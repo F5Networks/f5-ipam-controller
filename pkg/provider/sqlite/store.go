@@ -3,8 +3,8 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
 	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type DBStore struct {
@@ -42,7 +42,7 @@ func (store *DBStore) CreateTables() bool {
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 		"ipaddress" TEXT,
 		"status" INT,
-		"cidr" TEXT	
+		"ipam_label" TEXT
 	  );`
 
 	statement, _ := store.db.Prepare(createIPAddressTableSQL)
@@ -67,13 +67,13 @@ func (store *DBStore) CreateTables() bool {
 	return true
 }
 
-func (store *DBStore) InsertIP(ips []string, cidr string) {
-	for _, j := range ips {
-		insertIPSQL := `INSERT INTO ipaddress_range(ipaddress, status, cidr) VALUES (?, ?, ?)`
+func (store *DBStore) InsertIP(ips []string, ipamLabel string) {
+	for _, ip := range ips {
+		insertIPSQL := `INSERT INTO ipaddress_range(ipaddress, status, ipam_label) VALUES (?, ?, ?)`
 
 		statement, _ := store.db.Prepare(insertIPSQL)
 
-		_, err := statement.Exec(j, AVAILABLE, cidr)
+		_, err := statement.Exec(ip, AVAILABLE, ipamLabel)
 		if err != nil {
 			log.Error("[STORE] Unable to Insert row in Table 'ipaddress_range'")
 		}
@@ -90,26 +90,26 @@ func (store *DBStore) DisplayIPRecords() {
 	if err != nil {
 		log.Debugf(" err : ", err)
 	}
-	log.Debugf("[STORE] Column names: %v", columns)
+	log.Debugf("[STORE] %v", columns)
 	defer row.Close()
 	for row.Next() {
 		var id int
 		var ipaddress string
 		var status int
-		var cidr string
-		row.Scan(&id, &ipaddress, &status, &cidr)
-		log.Debugf("[STORE] ipaddress_range: %v\t %v\t%v\t%v", id, ipaddress, status, cidr)
+		var ipamLabel string
+		row.Scan(&id, &ipaddress, &status, &ipamLabel)
+		log.Debugf("[STORE]  %v\t %v %v %v", id, ipaddress, status, ipamLabel)
 	}
 }
 
-func (store *DBStore) AllocateIP(cidr string) string {
+func (store *DBStore) AllocateIP(ipamLabel string) string {
 	var ipaddress string
 	var id int
 
 	queryString := fmt.Sprintf(
-		"SELECT ipaddress,id FROM ipaddress_range where status=%d AND cidr=\"%s\" order by id ASC limit 1",
+		"SELECT ipaddress,id FROM ipaddress_range where status=%d AND ipam_label=\"%s\" order by id ASC limit 1",
 		AVAILABLE,
-		cidr,
+		ipamLabel,
 	)
 	err := store.db.QueryRow(queryString).Scan(&ipaddress, &id)
 	if err != nil {
@@ -127,13 +127,13 @@ func (store *DBStore) AllocateIP(cidr string) string {
 	return ipaddress
 }
 
-func (store *DBStore) MarkIPAsAllocated(cidr, ipAddr string) bool {
+func (store *DBStore) MarkIPAsAllocated(ipamLabel, ipAddr string) bool {
 	var id int
 
 	queryString := fmt.Sprintf(
-		"SELECT id FROM ipaddress_range where status=%d AND cidr=\"%s\" AND ipaddress=\"%s\" order by id ASC limit 1",
+		"SELECT id FROM ipaddress_range where status=%d AND ipam_label=\"%s\" AND ipaddress=\"%s\" order by id ASC limit 1",
 		AVAILABLE,
-		cidr,
+		ipamLabel,
 		ipAddr,
 	)
 	err := store.db.QueryRow(queryString).Scan(&id)
@@ -153,8 +153,9 @@ func (store *DBStore) MarkIPAsAllocated(cidr, ipAddr string) bool {
 	return true
 }
 
-func (store *DBStore) GetIPAddress(hostname string) string {
+func (store *DBStore) GetIPAddress(ipamLabel, hostname string) string {
 	var ipaddress string
+	var status int
 
 	queryString := fmt.Sprintf(
 		"SELECT ipaddress FROM a_records where hostname=\"%s\" order by ipaddress ASC limit 1",
@@ -162,9 +163,18 @@ func (store *DBStore) GetIPAddress(hostname string) string {
 	)
 	err := store.db.QueryRow(queryString).Scan(&ipaddress)
 	if err != nil {
-		log.Infof("[STORE] No A record with Host: %v", hostname)
 		return ""
 	}
+
+	queryString = fmt.Sprintf("SELECT status FROM ipaddress_range where ipaddress=%s AND ipam_label=\"%s\" order by id ASC limit 1",
+		ipaddress,
+		ipamLabel,
+	)
+	err = store.db.QueryRow(queryString).Scan(&status)
+	if err != nil || status == AVAILABLE {
+		return ""
+	}
+
 	return ipaddress
 }
 
