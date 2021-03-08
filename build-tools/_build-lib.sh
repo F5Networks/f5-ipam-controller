@@ -22,7 +22,7 @@ set -e
 : ${BUILD_VARIANT:=release}
 : ${BUILD_VARIANT_FLAGS:=}
 
-PKGIMPORT="github.com/f5devcentral/f5-ipam-controller"
+PKGIMPORT="github.com/F5Networks/f5-ipam-controller"
 
 
 if [ -z $BUILD_VERSION ]; then
@@ -46,7 +46,7 @@ get_builddir() {
   #local platform="$(go env GOHOSTOS)-$(go env GOHOSTARCH)-${BUILD_VARIANT}"
   #local govers=$(go version  | awk '{print $3}')
   #echo "${GOPATH}/out/$platform-$govers"
-  echo "/go/out/"
+  echo "/go/out"
 }
 
 # This is the expected output location, from the release build container
@@ -127,7 +127,7 @@ gather_coverage() {
 	mkdir -p $BUILDDIR/coverage
 
   (
-    cd $WKDIR/src/github.com/f5devcentral
+    cd $WKDIR/src/github.com/F5Networks
     gocovmerge `find . -name *.coverprofile` > coverage.out
     go tool cover -html=coverage.out -o coverage.html
     go tool cover -func=coverage.out

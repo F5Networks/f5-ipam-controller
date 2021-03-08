@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"time"
 
-	ficInfV1 "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/informers/externalversions/fic/v1"
-	log "github.com/f5devcentral/f5-ipam-controller/pkg/vlogger"
+	ficInfV1 "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/informers/externalversions/fic/v1"
+	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 )

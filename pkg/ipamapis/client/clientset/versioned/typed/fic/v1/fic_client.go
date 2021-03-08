@@ -19,8 +19,8 @@ limitations under the License.
 package v1
 
 import (
-	v1 "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/apis/fic/v1"
-	"github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned/scheme"
+	v1 "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/apis/fic/v1"
+	"github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

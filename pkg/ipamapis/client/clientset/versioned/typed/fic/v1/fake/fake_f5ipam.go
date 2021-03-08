@@ -19,7 +19,7 @@ limitations under the License.
 package fake
 
 import (
-	ficv1 "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/apis/fic/v1"
+	ficv1 "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/apis/fic/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

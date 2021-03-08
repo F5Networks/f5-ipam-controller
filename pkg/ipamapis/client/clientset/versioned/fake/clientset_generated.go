@@ -19,9 +19,9 @@ limitations under the License.
 package fake
 
 import (
-	clientset "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned"
-	k8sv1 "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned/typed/fic/v1"
-	fakek8sv1 "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned/typed/fic/v1/fake"
+	clientset "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned"
+	k8sv1 "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned/typed/fic/v1"
+	fakek8sv1 "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned/typed/fic/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

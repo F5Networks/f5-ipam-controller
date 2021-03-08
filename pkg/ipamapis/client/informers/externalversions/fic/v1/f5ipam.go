@@ -21,10 +21,10 @@ package v1
 import (
 	time "time"
 
-	ficv1 "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/apis/fic/v1"
-	versioned "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned"
-	internalinterfaces "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/informers/externalversions/internalinterfaces"
-	v1 "github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/listers/fic/v1"
+	ficv1 "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/apis/fic/v1"
+	versioned "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned"
+	internalinterfaces "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/informers/externalversions/internalinterfaces"
+	v1 "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/listers/fic/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"

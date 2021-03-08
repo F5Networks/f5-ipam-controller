@@ -1,4 +1,4 @@
-PACKAGE  := github.com/f5devcentral/f5-ipam-controller
+PACKAGE  := github.com/F5Networks/f5-ipam-controller
 
 BASE     := $(GOPATH)/src/$(PACKAGE)
 GOOS     = $(shell go env GOOS)
@@ -67,7 +67,7 @@ pre-build:
 
 prod-build: pre-build
 	@echo "Building with minimal instrumentation..."
-	LICENSE=$(LICENSE) RUN_TESTS=1 BASE_OS=$(BASE_OS) BASE_OS=$(BASE_OS) $(CURDIR)/build-tools/build-image.sh
+	LICENSE=$(LICENSE) RUN_TESTS=1 BASE_OS=$(BASE_OS) $(CURDIR)/build-tools/build-image.sh
 
 prod-quick: prod-build-quick
 

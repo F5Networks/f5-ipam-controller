@@ -19,8 +19,8 @@ package ipammachinery
 import (
 	"fmt"
 
-	"github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned"
-	log "github.com/f5devcentral/f5-ipam-controller/pkg/vlogger"
+	"github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned"
+	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
 	apiextensionv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	extClient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"

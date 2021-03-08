@@ -17,7 +17,7 @@
 package ipammachinery
 
 import (
-	"github.com/f5devcentral/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned"
+	"github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/client/clientset/versioned"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
