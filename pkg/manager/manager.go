@@ -2,23 +2,24 @@ package manager
 
 import (
 	"fmt"
+	"github.com/F5Networks/f5-ipam-controller/pkg/ipamspec"
 	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
 )
 
 // Manager defines the interface that the IPAM system should implement
 type Manager interface {
 	// Creates an A record
-	CreateARecord(hostname, ipAddr string) bool
+	CreateARecord(req ipamspec.IPAMRequest) bool
 	// Deletes an A record and releases the IP address
-	DeleteARecord(hostname, ipAddr string)
-	// Gets IP Address associated with hostname
-	GetIPAddress(cidr, hostname string) string
-	// Gets and reserves the next available IP address
-	GetNextIPAddress(cidr string) string
-	// Allocates this particular ip from the CIDR
-	AllocateIPAddress(cidr, ipAddr string) bool
+	DeleteARecord(req ipamspec.IPAMRequest)
+	// Gets IP Address associated with hostname in the given CIDR
+	GetIPAddress(req ipamspec.IPAMRequest) string
+	// Gets and reserves the next available IP address in the given CIDR
+	GetNextIPAddress(req ipamspec.IPAMRequest) string
+	// Allocates given IP address from the CIDR
+	AllocateIPAddress(req ipamspec.IPAMRequest) bool
 	// Releases an IP address
-	ReleaseIPAddress(ipAddr string)
+	ReleaseIPAddress(req ipamspec.IPAMRequest)
 }
 
 const F5IPAMProvider = "f5-ip-provider"

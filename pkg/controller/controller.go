@@ -46,9 +46,9 @@ func (ctlr *Controller) runController() {
 			// Controller tries to allocate asked IP Address to be allocated for the host from the give cidr
 			// This happens during Starting of Controller to sync the DB with Initial Requests
 			if req.IPAddr != "" {
-				if ctlr.Manager.AllocateIPAddress(req.CIDR, req.IPAddr) {
+				if ctlr.Manager.AllocateIPAddress(req) {
 					log.Debugf("[CORE] Allocated IP: %v for CIDR: %v", req.IPAddr, req.CIDR)
-					ctlr.Manager.CreateARecord(req.HostName, req.IPAddr)
+					ctlr.Manager.CreateARecord(req)
 					go sendResponse(req, req.IPAddr)
 				} else {
 					log.Debugf("[CORE] Unable to Allocate asked IPAddress: %v to Host: %v in CIDR: %v",
@@ -65,23 +65,25 @@ func (ctlr *Controller) runController() {
 				break
 			}
 
-			ipAddr := ctlr.Manager.GetIPAddress(req.CIDR, req.HostName)
+			ipAddr := ctlr.Manager.GetIPAddress(req)
 			if ipAddr != "" {
 				go sendResponse(req, ipAddr)
 				break
 			}
 
-			ipAddr = ctlr.Manager.GetNextIPAddress(req.CIDR)
+			ipAddr = ctlr.Manager.GetNextIPAddress(req)
 			if ipAddr != "" {
 				log.Debugf("[CORE] Allocated IP: %v for CIDR: %v", ipAddr, req.CIDR)
-				ctlr.Manager.CreateARecord(req.HostName, ipAddr)
+				req.IPAddr = ipAddr
+				ctlr.Manager.CreateARecord(req)
 				go sendResponse(req, ipAddr)
 			}
 		case ipamspec.DELETE:
-			ipAddr := ctlr.Manager.GetIPAddress(req.CIDR, req.HostName)
+			ipAddr := ctlr.Manager.GetIPAddress(req)
 			if ipAddr != "" {
-				ctlr.Manager.ReleaseIPAddress(ipAddr)
-				ctlr.Manager.DeleteARecord(req.HostName, ipAddr)
+				req.IPAddr = ipAddr
+				ctlr.Manager.ReleaseIPAddress(req)
+				ctlr.Manager.DeleteARecord(req)
 			}
 			go func(request ipamspec.IPAMRequest) {
 				resp := ipamspec.IPAMResponse{

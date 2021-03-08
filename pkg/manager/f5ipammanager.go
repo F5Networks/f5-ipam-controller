@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/F5Networks/f5-ipam-controller/pkg/ipamspec"
 	"github.com/F5Networks/f5-ipam-controller/pkg/provider"
 	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
 )
@@ -27,64 +28,91 @@ func NewIPAMManager(params IPAMManagerParams) (*IPAMManager, error) {
 }
 
 // Creates an A record
-func (ipMgr *IPAMManager) CreateARecord(hostname, ipAddr string) bool {
-	if !isIPV4Addr(ipAddr) {
+func (ipMgr *IPAMManager) CreateARecord(req ipamspec.IPAMRequest) bool {
+	if req.IPAddr == "" || (req.HostName == "" && req.Key == "") {
+		log.Errorf("[IPMG] Invalid Request to Create A Record: %v", req.String())
+	}
+	if !isIPV4Addr(req.IPAddr) {
 		log.Errorf("[IPMG] Unable to Create 'A' Record, as Invalid IP Address Provided")
 		return false
 	}
+	if req.Key != "" {
+		ipMgr.provider.CreateARecord(req.Key, req.IPAddr)
+		return true
+	}
 	// TODO: Validate hostname to be a proper dns hostname
-	ipMgr.provider.CreateARecord(hostname, ipAddr)
+	ipMgr.provider.CreateARecord(req.HostName, req.IPAddr)
 	return true
 }
 
 // Deletes an A record and releases the IP address
-func (ipMgr *IPAMManager) DeleteARecord(hostname, ipAddr string) {
-	if !isIPV4Addr(ipAddr) {
+func (ipMgr *IPAMManager) DeleteARecord(req ipamspec.IPAMRequest) {
+	if req.IPAddr == "" || (req.HostName == "" && req.Key == "") {
+		log.Errorf("[IPMG] Invalid Request to Delete A Record: %v", req.String())
+	}
+	if !isIPV4Addr(req.IPAddr) {
 		log.Errorf("[IPMG] Unable to Delete 'A' Record, as Invalid IP Address Provided")
 		return
 	}
-	// TODO: Validate hostname to be a proper dns hostname
-	ipMgr.provider.DeleteARecord(hostname, ipAddr)
-}
-
-func (ipMgr *IPAMManager) GetIPAddress(cidr, hostname string) string {
-	if !isValidCIDR(cidr) {
-		log.Debugf("[IPMG] Unable to Get IP Address, as Invalid CIDR Provided: %v", cidr)
-		return ""
+	if req.Key != "" {
+		ipMgr.provider.DeleteARecord(req.Key, req.IPAddr)
+		return
 	}
 	// TODO: Validate hostname to be a proper dns hostname
-	return ipMgr.provider.GetIPAddress(cidr, hostname)
+	ipMgr.provider.DeleteARecord(req.HostName, req.IPAddr)
+}
+
+func (ipMgr *IPAMManager) GetIPAddress(req ipamspec.IPAMRequest) string {
+	if req.CIDR == "" || (req.HostName == "" && req.Key == "") {
+		log.Errorf("[IPMG] Invalid Request to Get IP Address: %v", req.String())
+		return ""
+	}
+	if !isValidCIDR(req.CIDR) {
+		log.Debugf("[IPMG] Unable to Get IP Address, as Invalid CIDR Provided: %v", req.CIDR)
+		return ""
+	}
+	if req.Key != "" {
+		return ipMgr.provider.GetIPAddress(req.CIDR, req.Key)
+	}
+	// TODO: Validate hostname to be a proper dns hostname
+	return ipMgr.provider.GetIPAddress(req.CIDR, req.HostName)
 }
 
 // Gets and reserves the next available IP address
-func (ipMgr *IPAMManager) GetNextIPAddress(cidr string) string {
-	if !isValidCIDR(cidr) {
-		log.Debugf("[IPMG] Unable to Get Next IP Address, as Invalid CIDR Provided: %v", cidr)
+func (ipMgr *IPAMManager) GetNextIPAddress(req ipamspec.IPAMRequest) string {
+	if !isValidCIDR(req.CIDR) {
+		log.Debugf("[IPMG] Unable to Get Next IP Address, as Invalid CIDR Provided: %v", req.CIDR)
 		return ""
 	}
-	return ipMgr.provider.GetNextAddr(cidr)
+	return ipMgr.provider.GetNextAddr(req.CIDR)
 }
 
 // Allocates this particular ip from the CIDR
-func (ipMgr *IPAMManager) AllocateIPAddress(cidr, ipAddr string) bool {
-	if !isValidCIDR(cidr) {
-		log.Debugf("[IPMG] Unable to Allocate IP Address, as Invalid CIDR Provided: %v", cidr)
+func (ipMgr *IPAMManager) AllocateIPAddress(req ipamspec.IPAMRequest) bool {
+	if req.CIDR == "" || req.IPAddr == "" {
+		log.Errorf("[IPMG] Invalid Request to Allocate IP Address: %v", req.String())
 		return false
 	}
-	return ipMgr.provider.AllocateIPAddress(cidr, ipAddr)
+	if !isValidCIDR(req.CIDR) {
+		log.Debugf("[IPMG] Unable to Allocate IP Address, as Invalid CIDR Provided: %v", req.CIDR)
+		return false
+	}
+	return ipMgr.provider.AllocateIPAddress(req.CIDR, req.IPAddr)
 }
 
 // Releases an IP address
-func (ipMgr *IPAMManager) ReleaseIPAddress(ipAddr string) {
-
-	if !isIPV4Addr(ipAddr) {
+func (ipMgr *IPAMManager) ReleaseIPAddress(req ipamspec.IPAMRequest) {
+	if !isIPV4Addr(req.IPAddr) {
 		log.Errorf("[IPMG] Unable to Release IP Address, as Invalid IP Address Provided")
 		return
 	}
-	ipMgr.provider.ReleaseAddr(ipAddr)
+	ipMgr.provider.ReleaseAddr(req.IPAddr)
 }
 
 func isIPV4Addr(ipAddr string) bool {
+	if ipAddr == "" {
+		return false
+	}
 	if net.ParseIP(ipAddr) == nil {
 		return false
 	}
@@ -98,6 +126,9 @@ func isIPV4Addr(ipAddr string) bool {
 }
 
 func isValidCIDR(cidr string) bool {
+	if cidr == "" {
+		return false
+	}
 	_, _, err := net.ParseCIDR(cidr)
 	if err != nil {
 		return false
