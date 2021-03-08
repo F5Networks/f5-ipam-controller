@@ -215,6 +215,7 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 				HostName:  ipSpec.Host,
 				CIDR:      ipSpec.Cidr,
 				IPAddr:    ipSpec.IP,
+				Key:       ipSpec.Key,
 				Operation: ipamspec.CREATE,
 			}
 			k8sc.reqChan <- ipamReq
@@ -228,6 +229,7 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 				},
 				HostName:  hostSpec.Host,
 				CIDR:      hostSpec.Cidr,
+				Key:       hostSpec.Key,
 				Operation: ipamspec.CREATE,
 			}
 			k8sc.reqChan <- ipamReq
@@ -241,6 +243,7 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 				},
 				HostName:  ipStatus.Host,
 				CIDR:      ipStatus.Cidr,
+				Key:       ipStatus.Key,
 				IPAddr:    ipStatus.IP,
 				Operation: ipamspec.DELETE,
 			}
@@ -266,6 +269,7 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 					},
 					HostName:  spec.Host,
 					CIDR:      spec.Cidr,
+					Key:       spec.Key,
 					Operation: ipamspec.DELETE,
 				}
 				k8sc.reqChan <- ipamReq
@@ -281,6 +285,7 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 					},
 					HostName:  spec.Host,
 					CIDR:      spec.Cidr,
+					Key:       spec.Key,
 					Operation: ipamspec.CREATE,
 				}
 				k8sc.reqChan <- ipamReq
@@ -307,8 +312,9 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 
 				found := false
 				for _, ipSpec := range ipamRsc.Status.IPStatus {
-					if ipSpec.Host == resp.Request.HostName &&
-						ipSpec.Cidr == resp.Request.CIDR {
+					if (resp.Request.HostName != "" && ipSpec.Host == resp.Request.HostName) ||
+						(resp.Request.Key != "" && ipSpec.Key == resp.Request.Key) &&
+							ipSpec.Cidr == resp.Request.CIDR {
 
 						ipSpec.IP = resp.IPAddr
 						found = true
@@ -317,6 +323,7 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 				if !found {
 					ipSpec := &ficV1.IPSpec{
 						Host: resp.Request.HostName,
+						Key:  resp.Request.Key,
 						Cidr: resp.Request.CIDR,
 						IP:   resp.IPAddr,
 					}
@@ -327,10 +334,11 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 				if err != nil {
 					log.Errorf("Unable to Update F5IPAM: %v/%v", metadata.namespace, metadata.name)
 				}
-				log.Debugf("Updated: %v/%v with Status. Added Host: %v, CIDR: %v, IP: %v",
+				log.Debugf("Updated: %v/%v with Status. Added Host: %v, Key: %v, CIDR: %v, IP: %v",
 					metadata.namespace,
 					metadata.name,
 					resp.Request.HostName,
+					resp.Request.Key,
 					resp.Request.CIDR,
 					resp.IPAddr,
 				)
@@ -349,8 +357,9 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 				}
 				index := -1
 				for i, ipSpec := range ipamRsc.Status.IPStatus {
-					if ipSpec.Host == resp.Request.HostName &&
-						ipSpec.Cidr == resp.Request.CIDR {
+					if (resp.Request.HostName != "" && ipSpec.Host == resp.Request.HostName) ||
+						(resp.Request.Key != "" && ipSpec.Key == resp.Request.Key) &&
+							ipSpec.Cidr == resp.Request.CIDR {
 
 						index = i
 					}
@@ -365,10 +374,11 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 						log.Errorf("Unable to Update F5IPAM: %v/%v", metadata.namespace, metadata.name)
 					}
 				}
-				log.Debugf("Updated: %v/%v with Status. Removed Host: %v, CIDR: %v, IP: %v",
+				log.Debugf("Updated: %v/%v with Status. Removed Host: %v, Key: %v, CIDR: %v, IP: %v",
 					metadata.namespace,
 					metadata.name,
 					resp.Request.HostName,
+					resp.Request.Key,
 					resp.Request.CIDR,
 					resp.IPAddr,
 				)
