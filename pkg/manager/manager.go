@@ -12,11 +12,11 @@ type Manager interface {
 	CreateARecord(req ipamspec.IPAMRequest) bool
 	// Deletes an A record and releases the IP address
 	DeleteARecord(req ipamspec.IPAMRequest)
-	// Gets IP Address associated with hostname in the given CIDR
+	// Gets IP Address associated with hostname
 	GetIPAddress(req ipamspec.IPAMRequest) string
-	// Gets and reserves the next available IP address in the given CIDR
+	// Gets and reserves the next available IP address
 	GetNextIPAddress(req ipamspec.IPAMRequest) string
-	// Allocates given IP address from the CIDR
+	// Allocates given IP address
 	AllocateIPAddress(req ipamspec.IPAMRequest) bool
 	// Releases an IP address
 	ReleaseIPAddress(req ipamspec.IPAMRequest)
