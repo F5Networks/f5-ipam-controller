@@ -19,6 +19,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	ficv1 "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/apis/fic/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -39,7 +41,7 @@ var f5ipamsResource = schema.GroupVersionResource{Group: "k8s.nginx.org", Versio
 var f5ipamsKind = schema.GroupVersionKind{Group: "k8s.nginx.org", Version: "v1", Kind: "F5IPAM"}
 
 // Get takes name of the f5IPAM, and returns the corresponding f5IPAM object, and an error if there is any.
-func (c *FakeF5IPAMs) Get(name string, options v1.GetOptions) (result *ficv1.F5IPAM, err error) {
+func (c *FakeF5IPAMs) Get(ctx context.Context, name string, options v1.GetOptions) (result *ficv1.F5IPAM, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(f5ipamsResource, c.ns, name), &ficv1.F5IPAM{})
 
@@ -50,7 +52,7 @@ func (c *FakeF5IPAMs) Get(name string, options v1.GetOptions) (result *ficv1.F5I
 }
 
 // List takes label and field selectors, and returns the list of F5IPAMs that match those selectors.
-func (c *FakeF5IPAMs) List(opts v1.ListOptions) (result *ficv1.F5IPAMList, err error) {
+func (c *FakeF5IPAMs) List(ctx context.Context, opts v1.ListOptions) (result *ficv1.F5IPAMList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(f5ipamsResource, f5ipamsKind, c.ns, opts), &ficv1.F5IPAMList{})
 
@@ -72,14 +74,14 @@ func (c *FakeF5IPAMs) List(opts v1.ListOptions) (result *ficv1.F5IPAMList, err e
 }
 
 // Watch returns a watch.Interface that watches the requested f5IPAMs.
-func (c *FakeF5IPAMs) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeF5IPAMs) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(f5ipamsResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a f5IPAM and creates it.  Returns the server's representation of the f5IPAM, and an error, if there is any.
-func (c *FakeF5IPAMs) Create(f5IPAM *ficv1.F5IPAM) (result *ficv1.F5IPAM, err error) {
+func (c *FakeF5IPAMs) Create(ctx context.Context, f5IPAM *ficv1.F5IPAM, opts v1.CreateOptions) (result *ficv1.F5IPAM, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(f5ipamsResource, c.ns, f5IPAM), &ficv1.F5IPAM{})
 
@@ -90,7 +92,7 @@ func (c *FakeF5IPAMs) Create(f5IPAM *ficv1.F5IPAM) (result *ficv1.F5IPAM, err er
 }
 
 // Update takes the representation of a f5IPAM and updates it. Returns the server's representation of the f5IPAM, and an error, if there is any.
-func (c *FakeF5IPAMs) Update(f5IPAM *ficv1.F5IPAM) (result *ficv1.F5IPAM, err error) {
+func (c *FakeF5IPAMs) Update(ctx context.Context, f5IPAM *ficv1.F5IPAM, opts v1.UpdateOptions) (result *ficv1.F5IPAM, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(f5ipamsResource, c.ns, f5IPAM), &ficv1.F5IPAM{})
 
@@ -102,7 +104,7 @@ func (c *FakeF5IPAMs) Update(f5IPAM *ficv1.F5IPAM) (result *ficv1.F5IPAM, err er
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeF5IPAMs) UpdateStatus(f5IPAM *ficv1.F5IPAM) (*ficv1.F5IPAM, error) {
+func (c *FakeF5IPAMs) UpdateStatus(ctx context.Context, f5IPAM *ficv1.F5IPAM, opts v1.UpdateOptions) (*ficv1.F5IPAM, error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceAction(f5ipamsResource, "status", c.ns, f5IPAM), &ficv1.F5IPAM{})
 
@@ -113,7 +115,7 @@ func (c *FakeF5IPAMs) UpdateStatus(f5IPAM *ficv1.F5IPAM) (*ficv1.F5IPAM, error) 
 }
 
 // Delete takes name of the f5IPAM and deletes it. Returns an error if one occurs.
-func (c *FakeF5IPAMs) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeF5IPAMs) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(f5ipamsResource, c.ns, name), &ficv1.F5IPAM{})
 
@@ -121,15 +123,15 @@ func (c *FakeF5IPAMs) Delete(name string, options *v1.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeF5IPAMs) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(f5ipamsResource, c.ns, listOptions)
+func (c *FakeF5IPAMs) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(f5ipamsResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &ficv1.F5IPAMList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched f5IPAM.
-func (c *FakeF5IPAMs) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *ficv1.F5IPAM, err error) {
+func (c *FakeF5IPAMs) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *ficv1.F5IPAM, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(f5ipamsResource, c.ns, name, pt, data, subresources...), &ficv1.F5IPAM{})
 

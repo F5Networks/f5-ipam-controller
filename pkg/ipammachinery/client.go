@@ -17,6 +17,7 @@
 package ipammachinery
 
 import (
+	"context"
 	v1 "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/apis/fic/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -29,7 +30,7 @@ func (ipamCli *IPAMClient) Create(namespace string, obj *v1.F5IPAM) (*v1.F5IPAM,
 	result := &v1.F5IPAM{}
 	err := ipamCli.restClient.Post().
 		Namespace(namespace).Resource("f5ipams").
-		Body(obj).Do().Into(result)
+		Body(obj).Do(context.TODO()).Into(result)
 	return result, err
 }
 
@@ -38,21 +39,21 @@ func (ipamCli *IPAMClient) Update(namespace string, obj *v1.F5IPAM) (*v1.F5IPAM,
 	err := ipamCli.restClient.Put().
 		Namespace(namespace).Resource("f5ipams").
 		Name(obj.Name).
-		Body(obj).Do().Into(result)
+		Body(obj).Do(context.TODO()).Into(result)
 	return result, err
 }
 
 func (ipamCli *IPAMClient) Delete(namespace, name string, options *meta_v1.DeleteOptions) error {
 	return ipamCli.restClient.Delete().
 		Namespace(namespace).Resource("f5ipams").
-		Name(name).Body(options).Do().Error()
+		Name(name).Body(options).Do(context.TODO()).Error()
 }
 
 func (ipamCli *IPAMClient) Get(namespace, name string) (*v1.F5IPAM, error) {
 	result := &v1.F5IPAM{}
 	err := ipamCli.restClient.Get().
 		Namespace(namespace).Resource("f5ipams").
-		Name(name).Do().Into(result)
+		Name(name).Do(context.TODO()).Into(result)
 	return result, err
 }
 
