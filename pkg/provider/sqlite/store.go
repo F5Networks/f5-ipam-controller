@@ -19,6 +19,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+
 	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -182,7 +183,7 @@ func (store *DBStore) GetIPAddress(ipamLabel, hostname string) string {
 		return ""
 	}
 
-	queryString = fmt.Sprintf("SELECT status FROM ipaddress_range where ipaddress=%s AND ipam_label=\"%s\" order by id ASC limit 1",
+	queryString = fmt.Sprintf("SELECT status FROM ipaddress_range where ipaddress=\"%s\" AND ipam_label=\"%s\" order by id ASC limit 1",
 		ipaddress,
 		ipamLabel,
 	)
