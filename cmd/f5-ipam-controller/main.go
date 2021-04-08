@@ -21,6 +21,10 @@ const (
 )
 
 var (
+	// To be set by build
+	version   string
+	buildInfo string
+
 	// Flag sets and supported flags
 	flags         *flag.FlagSet
 	globalFlags   *flag.FlagSet
@@ -33,6 +37,8 @@ var (
 
 	// Provider
 	iprange *string
+
+	printVersion     *bool
 )
 
 func init() {
@@ -60,6 +66,9 @@ func init() {
 
 	iprange = providerFlags.String("ip-range", "",
 		"Optional, the Default Provider needs iprange to build pools of IP Addresses")
+
+	printVersion = globalFlags.Bool("version", false,
+		"Optional, print version and exit.")
 
 	globalFlags.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "  Global:\n%s\n", globalFlags.FlagUsagesWrapped(width))
@@ -109,12 +118,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	if *printVersion {
+		fmt.Printf("Version: %s\nBuild: %s\n", version, buildInfo)
+		os.Exit(0)
+	}
 	err = verifyArgs()
 	if nil != err {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		flags.Usage()
 		os.Exit(1)
 	}
+	log.Infof("[INIT] Starting: F5 IPAM Controller - Version: %s, BuildInfo: %s", version, buildInfo)
 
 	orcr := orchestration.NewOrchestrator()
 	if orcr == nil {
