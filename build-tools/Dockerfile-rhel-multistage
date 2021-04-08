@@ -1,6 +1,6 @@
 FROM quay.io/f5networks/rhel8_base_builder:latest as builder
 
-ENV BASE_PATH "$GOPATH/src/github.com/f5devcentral"
+ENV BASE_PATH "$GOPATH/src/github.com/F5Networks"
 RUN mkdir -p "$BASE_PATH"
 ENV REPO_NAME f5-ipam-controller
 WORKDIR "$BASE_PATH/$REPO_NAME"
@@ -13,8 +13,8 @@ ARG LICENSE
 
 # Copy Source code
 
-COPY ./$REPO_NAME .
-COPY ./$REPO_NAME/build-tools/help.md /tmp/
+COPY . .
+COPY ./build-tools/help.md /tmp/
 RUN go-md2man -in /tmp/help.md -out /help.1 && rm -f /tmp/help.md && \
     /bin/bash -ex $BASE_PATH/$REPO_NAME/build-tools/rel-build.sh
 
