@@ -353,9 +353,13 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 					ipamRsc.Status.IPStatus = append(ipamRsc.Status.IPStatus, ipSpec)
 				}
 
-				_, err = k8sc.ipamCli.Update(ipamRsc.Namespace, ipamRsc)
+				_, err = k8sc.ipamCli.UpdateStatus(ipamRsc)
 				if err != nil {
-					log.Errorf("Unable to Update F5IPAM: %v/%v", metadata.namespace, metadata.name)
+					log.Errorf("Unable to Update F5IPAM: %v/%v\t Error: %v",
+						metadata.namespace,
+						metadata.name,
+						err.Error(),
+					)
 				}
 				log.Debugf("Updated: %v/%v with Status. With IP: %v for Request: %v",
 					metadata.namespace,
@@ -392,9 +396,13 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 						ipamRsc.Status.IPStatus[:index],
 						ipamRsc.Status.IPStatus[index+1:]...,
 					)
-					_, err = k8sc.ipamCli.Update(ipamRsc.Namespace, ipamRsc)
+					_, err = k8sc.ipamCli.UpdateStatus(ipamRsc)
 					if err != nil {
-						log.Errorf("Unable to Update F5IPAM: %v/%v", metadata.namespace, metadata.name)
+						log.Errorf("Unable to Update F5IPAM: %v/%v\t Error: %v",
+							metadata.namespace,
+							metadata.name,
+							err.Error(),
+						)
 					}
 				}
 				log.Debugf("Updated: %v/%v with Status. Removed %v",
