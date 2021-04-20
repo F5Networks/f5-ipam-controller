@@ -47,7 +47,7 @@ metadata:
   name: ipam-ctlr-clusterrole
 rules:
   - apiGroups: ["fic.f5.com"]
-    resources: ["f5ipams"]
+    resources: ["f5ipams,"f5ipams/status"]
     verbs: ["get", "list", "watch", "update", "patch"]
 ---
 kind: ClusterRoleBinding
@@ -95,7 +95,7 @@ spec:
       containers:
       - args:
         - --orchestration=kubernetes
-        - --ip-range="10.192.75.111/24-10.192.75.115/24"
+        - --ip-range={"Dev":"172.16.3.21-172.16.3.30","Test":"172.  16.3.31-172.16.3.40", "Production":"172.16.3.41-172.16.3.50","Default":"172.16.3.51-172.16.3.60"}'
         - --log-level=DEBUG
         command:
         - /app/bin/f5-ipam-controller
@@ -118,11 +118,13 @@ kubectl create -f f5-ipam-deployment.yaml
 
 ### Configuring CIS to work with F5 IPAM Controller
 
-To configure CIS to work with the F5 IPAM controller, the user needs to give a parameter ```--ipam=true``` in the CIS deployment and also provide a parameter ```cidr``` in the virtual server CRD.
+To configure CIS to work with the F5 IPAM controller, the user needs to provide a parameter --ipam=true in the CIS deployment and also provide a parameter ipamLabel in the Kubernetes resource.
+
+#### Note: ipamLabel can have values as mentioned in the ip-range parameter in the deployment.
 
 #### Examples
 
-**Virtual Server CRD**
+**Virtual Server CR**
 
 ```
 apiVersion: "cis.f5.com/v1"
@@ -133,11 +135,36 @@ metadata:
    f5cr: "true"
 spec:
  host: coffee.example.com
- cidr: "10.192.75.111/24"
+ ipamLabel: Dev
  pools:
  - path: /coffee
    service: svc-2
    servicePort: 80
+```
+
+
+**Tansport Server CR**
+
+```
+  apiVersion: cis.f5.com/v1
+  kind: TransportServer
+  metadata:
+    generation: 2
+    labels:
+      f5cr: "true"
+  spec:
+    ipamLabel: Test
+    mode: standard
+    pool:
+      monitor:
+        interval: 20
+        timeout: 10
+        type: tcp
+      service: test-svc
+      servicePort: 1344
+    snat: auto
+    type: tcp
+    virtualServerPort: 1344
 ```
 
 **CIS Deployment with ipam enabled**
@@ -177,60 +204,14 @@ spec:
 
 
 #### NOTE: 
-- If the user provides the parameter ```--ipam=true``` in the CIS deployment then it is mandatory to provide the CIDR parameter in VS CRD to leverage the the IPAM Controller.
-- If a VirtualServer Address is specified in the resource, CIS don't leverage the IPAM Controller even if a  CIDR parameter is specified
-- If No VirtualServer Address is specified in the resource and a CIDR parameter is specified, CIS leverage the IPAM Controller for VS address.
+- If the user provides the parameter --ipam=true in the CIS deployment, then CIS decides if it needs to retrieve an IP Address from the IPAM Controller or not 
 
-### Updating the Status in Virtual Server CRD
+- If a VirtualServer Address is specified in the Kubernetes resource, CIS will not leverage the IPAM Controller for IP address even if a ipamLabel parameter is specified.
 
-
-The main aim of IPAM is to provide an IP address corresponding to each hostname provided in the VS CRD.
-
-The user needs to mandatorily provide the host and CIDR in the hostSpecs section of F5-CR. The F5 IPAM Controller, in turn, reads the hostSpecs of CR, processes it, and updates the IPStatus with each host provided in the hostSpecs with host, IP(which is generated from the range of IP address by FIC), and corresponding CIDR.
-
-- F5-ipam-controller (FIC) acts as a communication channel for updating the host, IP, and CIDR in VS CRD.
-
-Below is the example: 
-
-- f5-ipam-cr.yaml
-
-```
-apiVersion: "fic.f5.com/v1"
-kind: F5IPAM
-metadata:
-  name: f5ipam.sample
-  namespace: kube-system
-spec:
-  hostSpecs:
-  - host: cafe.example.com
-    cidr: 10.192.75.111/24
-  - host: tea.example.com
-    cidr: 10.192.75.111/24
-status:
-  IPStatus:
-  - host: cafe.example.com
-    ip: 10.192.75.112
-    cidr: 10.192.75.111/24
-  - host: tea.example.com
-    ip: 10.192.75.114
-    cidr: 10.192.75.111/24
-```
-
- ### Limitations
-
-1. Single IPAM Controller does not work with multiple CIS deployment.
-2. Sometime IPAM missed to allocate an IP for a domain when CIS is restarted.
-3. Sometime IPAM fails to allocate new IP address when CIDR is updated.
-
-For 2 and 3:  
-Mitigation: In this case the user can delete the F5-IPAM custom resource from kube-system named `"ipam.<Partition_Name>"` and restart both the controller.
-
-`kubectl delete f5ipam ipam.<Partition_Name> -n kube-system`
+- If No VirtualServer Address is specified in the Kubernetes resource and ipamLabel parameter is specified, CIS will leverage the IPAM Controller for allocation of IP address.
 
 
-### Known Issue
-- Observing error log when IPAM is not enabled in CIS.
+### Known Issues
 
-`[ERROR] [ipam] error while retriving IPAM namespace and name.`
-
-- IPAM Controller logs does not contain any build information
+- FIC does not allocate the last IP address specified in the ip     range.
+- Updating the --ip-range in FIC deployment is an issue.
