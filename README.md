@@ -47,7 +47,7 @@ metadata:
   name: ipam-ctlr-clusterrole
 rules:
   - apiGroups: ["fic.f5.com"]
-    resources: ["f5ipams,"f5ipams/status"]
+    resources: ["f5ipams","f5ipams/status"]
     verbs: ["get", "list", "watch", "update", "patch"]
 ---
 kind: ClusterRoleBinding
