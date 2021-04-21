@@ -43,6 +43,7 @@ ARG BUILD_INFO
 ARG VERSION_INFO
 
 COPY --from=builder "/help.1" /
+COPY $BASE_PATH/$REPO_NAME/LICENSE /licenses/
 
 RUN microdnf --enablerepo=ubi-8-baseos \
       install --nodocs shadow-utils \
