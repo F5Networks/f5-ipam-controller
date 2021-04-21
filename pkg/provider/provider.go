@@ -72,10 +72,13 @@ func (prov *IPAMProvider) Init(params Params) bool {
 		}
 
 		var ips []string
-		for ; startIP.String() != endIP.String(); incIP(startIP) {
+		for {
 			ips = append(ips, startIP.String())
+			incIP(startIP)
+			if startIP.String() != endIP.String() {
+				break
+			}
 		}
-
 		if len(ips) == 0 {
 			return false
 		}

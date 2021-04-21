@@ -1,6 +1,16 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
 
+Next Release
+-------------
+Added Functionality
+```````````````````
+
+Bug Fixes
+`````````
+FIC does not allocate the last IP address specified in the ip range.
+
+
 0.1.2
 -------------
 Added Functionality
