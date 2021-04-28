@@ -60,6 +60,7 @@ type rqKey struct {
 }
 
 type specMap map[ficV1.HostSpec]bool
+type statusMap map[ficV1.IPSpec]bool
 
 type ResourceMeta struct {
 	name      string
@@ -253,7 +254,25 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 			k8sc.reqChan <- ipamReq
 		}
 	case DELETE:
+		stsMap := statusMap{}
+		ipams, err := k8sc.ipamCli.List(rKey.rsc.Namespace)
+		if err != nil {
+			log.Debugf("Unable to get list of all IPAMs, freeing all IPs from: %s/%s",
+				rKey.rsc.Namespace, rKey.rsc.Name)
+		} else {
+			for _, ipam := range ipams {
+				if ipam.Name == rKey.rsc.Name {
+					continue
+				}
+				for _, ipStatus := range ipam.Status.IPStatus {
+					stsMap[*ipStatus] = true
+				}
+			}
+		}
 		for _, ipStatus := range rKey.rsc.Status.IPStatus {
+			if _, ok := stsMap[*ipStatus]; ok {
+				continue
+			}
 			ipamReq := ipamspec.IPAMRequest{
 				Metadata: ResourceMeta{
 					name:      rKey.rsc.Name,
