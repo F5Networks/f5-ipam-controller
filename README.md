@@ -4,14 +4,15 @@ The F5 IPAM Controller is a Docker container that runs in an orchestration envir
 It allocates IP addresses from an IPAM system’s address pool for hostnames in an orchestration environment.
 The F5 IPAM Controller watches orchestration-specific resources and consumes the hostnames within each resource.
 
-# In this IPAM
+The F5 IPAM Controller allocates IP addresses from static IP address pool based on the CIDR labels mentioned in a Kubernetes resource like VirtualServer CRD, TransportServer CRD and Service type LoadBalancer supported by Container Ingress Services.
 
-The F5 IPAM Controller can allocate IP address from static IP address pool based on the CIDR mentioned in a Kubernetes resource The idea here is that we will support CRD, Type LB and probably also in the future route/ingress. We should make it more generic so that we don't have to update this later, F5 IPAM Controller decides to allocate the IP from the respective IP address pool for the hostname specified in the virtualserver custom resource.
-
-Supported kubernetes resource : 
+Supported kubernetes resource :
+ 
 | RESOURCES | MINIMUM VERSION SUPPORTED |
 | ------ | ------ |
-| VS CRD | CIS v2.2.2 | 
+| VS CRD | CIS v2.2.2 |
+| TS CRD | CIS v2.4 |
+| ServiceType Loadbalancer| CIS v2.4 | 
 
 
 
