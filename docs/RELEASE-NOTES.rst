@@ -8,7 +8,8 @@ Added Functionality
 
 Bug Fixes
 `````````
-FIC does not allocate the last IP address specified in the ip range.
+* FIC does not allocate the last IP address specified in the ip range.
+* FIC freeing IP address on Resource Deletion though corresponding Spec entry is present in other Resources.
 
 
 0.1.2
