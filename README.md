@@ -48,7 +48,7 @@ metadata:
 rules:
   - apiGroups: ["fic.f5.com"]
     resources: ["f5ipams","f5ipams/status"]
-    verbs: ["get", "list", "watch", "update", "patch"]
+    verbs: ["get", "list", "watch", "update", "patch", "delete"]
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
