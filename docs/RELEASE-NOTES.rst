@@ -1,15 +1,13 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
 
-Next Release
+0.1.3
 -------------
-Added Functionality
-```````````````````
-
 Bug Fixes
 `````````
+* Old entries in IPAM CR spec/status are now removed when CIS gets restarted during VS update
 * FIC does not allocate the last IP address specified in the ip range.
-* FIC freeing IP address on Resource Deletion though corresponding Spec entry is present in other Resources.
+* Deleting resources releases IP address along with clearing corresponding spec entries.
 
 
 0.1.2
