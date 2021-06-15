@@ -234,6 +234,8 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 				IPAMLabel: ipSpec.IPAMLabel,
 				IPAddr:    ipSpec.IP,
 				Key:       ipSpec.Key,
+				NetView:   ipSpec.NetView,
+				DNSView:   ipSpec.DNSView,
 				Operation: ipamspec.CREATE,
 			}
 			k8sc.reqChan <- ipamReq
@@ -249,6 +251,8 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 				CIDR:      hostSpec.CIDR,
 				IPAMLabel: hostSpec.IPAMLabel,
 				Key:       hostSpec.Key,
+				NetView:   hostSpec.NetView,
+				DNSView:   hostSpec.DNSView,
 				Operation: ipamspec.CREATE,
 			}
 			k8sc.reqChan <- ipamReq
@@ -283,6 +287,8 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 				IPAMLabel: ipStatus.IPAMLabel,
 				Key:       ipStatus.Key,
 				IPAddr:    ipStatus.IP,
+				NetView:   ipStatus.NetView,
+				DNSView:   ipStatus.DNSView,
 				Operation: ipamspec.DELETE,
 			}
 			k8sc.reqChan <- ipamReq
@@ -309,6 +315,8 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 					CIDR:      spec.CIDR,
 					IPAMLabel: spec.IPAMLabel,
 					Key:       spec.Key,
+					NetView:   spec.NetView,
+					DNSView:   spec.DNSView,
 					Operation: ipamspec.DELETE,
 				}
 				k8sc.reqChan <- ipamReq
@@ -326,6 +334,8 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 					CIDR:      spec.CIDR,
 					IPAMLabel: spec.IPAMLabel,
 					Key:       spec.Key,
+					NetView:   spec.NetView,
+					DNSView:   spec.DNSView,
 					Operation: ipamspec.CREATE,
 				}
 				k8sc.reqChan <- ipamReq
@@ -368,6 +378,8 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 						CIDR:      resp.Request.CIDR,
 						IPAMLabel: resp.Request.IPAMLabel,
 						IP:        resp.IPAddr,
+						NetView:   resp.Request.NetView,
+						DNSView:   resp.Request.DNSView,
 					}
 					ipamRsc.Status.IPStatus = append(ipamRsc.Status.IPStatus, ipSpec)
 				}

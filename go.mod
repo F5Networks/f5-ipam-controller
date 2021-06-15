@@ -3,6 +3,7 @@ module github.com/F5Networks/f5-ipam-controller
 go 1.15
 
 require (
+	github.com/infobloxopen/infoblox-go-client v1.1.1
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/onsi/ginkgo v1.14.2 // indirect
 	github.com/onsi/gomega v1.10.4 // indirect

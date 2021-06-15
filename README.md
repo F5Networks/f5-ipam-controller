@@ -32,8 +32,25 @@ The F5 IPAM Controller acts as an interface to CIS to provide an IP address from
 | PARAMETER | TYPE | REQUIRED | DESCRIPTION |
 | ------ | ------ | ------ | ------ |
 | orchestration | String | Required | The orchestration parameter holds the orchestration environment i.e. Kubernetes. |
-| ip-range | String | Required |  ip-range parameter holds the IP address ranges and from this range, it creates a pool of IP address range which gets allocated to the corresponding hostname in the virtual server CRD |
+| ip-provider | String | Required |  ip-provider parameter holds the IP provider that holds the ownership of providing IP addresses. Default is *f5-ip-provider*. |
 | log-level | String | Optional |  Log level parameter specify various logging level such as DEBUG, INFO, WARNING, ERROR, CRITICAL. |
+
+**Deployment Options of Provider (f5-ip-provider)**
+
+| PARAMETER | TYPE | REQUIRED | DESCRIPTION |
+| ------ | ------ | ------ | ------ |
+| ip-range | String | Required |  ip-range parameter holds the IP address ranges and from this range, it creates a pool of IP address range which gets allocated to the corresponding hostname in the virtual server CRD |
+
+**Deployment Options of Provider (infoblox)**
+
+| PARAMETER | TYPE | REQUIRED | DESCRIPTION |
+| ------ | ------ | ------ | ------ |
+| infoblox-grid-host | String | Required |  URL (or IP Address) of Infoblox Grid Host |
+| infoblox-wapi-port | String | Required | Port that the Infoblox Server listens on |
+| infoblox-wapi-version | String | Required | Web API version of Infoblox
+| infoblox-username | String | Required | Username of Infoblox User |
+| infoblox-username | String | Required | Password of the given Infoblox User |
+
 
 Note: On how to configure these Configuration Options, please refer to IPAM Deployment YAML example in below.
 
@@ -72,7 +89,7 @@ metadata:
   namespace: kube-system
 ```
 
-#### Example: F5 IPAM Controller Deployment YAML
+#### Example: F5 IPAM Controller Deployment YAML with Default Provider
 
 ```
 apiVersion: apps/v1
@@ -105,6 +122,52 @@ spec:
       serviceAccount: ipam-ctlr
       serviceAccountName: ipam-ctlr
 ```
+
+#### Example: F5 IPAM Controller Deployment YAML with Infoblox Provider
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: f5-ipam-controller
+  name: f5-ipam-controller
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: f5-ipam-controller
+  template:
+    metadata:
+      labels:
+        app: f5-ipam-controller
+    spec:
+      containers:
+      - args:
+        - --orchestration=kubernetes
+        - --log-level=DEBUG
+        - --ip-provider
+        - infoblox
+        - --infoblox-grid-host
+        - 10.144.75.2
+        - --infoblox-wapi-port=443
+        - --infoblox-wapi-version
+        - 2.11.2
+        - --infoblox-username
+        - user
+        - --infoblox-password
+        - paswd
+
+        command:
+        - /app/bin/f5-ipam-controller
+        image: f5networks/f5-ipam-controller
+        imagePullPolicy: IfNotPresent
+        name: f5-ipam-controller
+      serviceAccount: ipam-ctlr
+      serviceAccountName: ipam-ctlr
+```
+
 
 #### Deploying RBAC and F5 IPAM Controller 
 
