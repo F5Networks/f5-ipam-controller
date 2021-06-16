@@ -24,6 +24,7 @@ import (
 
 // Manager defines the interface that the IPAM system should implement
 type Manager interface {
+	IsPersistent() bool
 	// Creates an A record
 	CreateARecord(req ipamspec.IPAMRequest) bool
 	// Deletes an A record and releases the IP address
@@ -39,10 +40,12 @@ type Manager interface {
 }
 
 const F5IPAMProvider = "f5-ip-provider"
+const InfobloxProvider = "infoblox"
 
 type Params struct {
 	Provider string
 	IPAMManagerParams
+	InfobloxParams
 }
 
 func NewManager(params Params) (Manager, error) {
@@ -51,6 +54,16 @@ func NewManager(params Params) (Manager, error) {
 		log.Debugf("[MGR] Creating Manager with Provider: %v", F5IPAMProvider)
 		f5IPAMParams := IPAMManagerParams{Range: params.Range}
 		return NewIPAMManager(f5IPAMParams)
+	case InfobloxProvider:
+		log.Debugf("[MGR] Creating Manager with Provider: %v", InfobloxProvider)
+		ibxParams := InfobloxParams{
+			Host:     params.Host,
+			Version:  params.Version,
+			Port:     params.Port,
+			Username: params.Username,
+			Password: params.Password,
+		}
+		return NewInfobloxManager(ibxParams)
 	default:
 		log.Errorf("[MGR] Unknown Provider: %v", params.Provider)
 	}

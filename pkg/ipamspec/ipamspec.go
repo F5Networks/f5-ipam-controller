@@ -25,12 +25,14 @@ const (
 
 type IPAMRequest struct {
 	Metadata  interface{}
-	HostName  string
-	Key       string
-	CIDR      string
-	IPAMLabel string
-	IPAddr    string
 	Operation string
+	HostName  string
+	IPAddr    string
+	Key       string
+	IPAMLabel string
+	CIDR      string
+	NetView   string
+	DNSView   string
 }
 
 type IPAMResponse struct {

@@ -43,6 +43,10 @@ func NewIPAMManager(params IPAMManagerParams) (*IPAMManager, error) {
 	return &IPAMManager{provider: prov}, nil
 }
 
+func (ipMgr *IPAMManager) IsPersistent() bool {
+	return false
+}
+
 // Creates an A record
 func (ipMgr *IPAMManager) CreateARecord(req ipamspec.IPAMRequest) bool {
 	if req.IPAddr == "" || (req.HostName == "" && req.Key == "") {

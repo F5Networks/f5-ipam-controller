@@ -1,6 +1,12 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
 
+Next Release
+------------
+Added Functionality
+```````````````````
+* Add New Provider Infoblox with IPV4 Support
+
 0.1.3
 -------------
 Bug Fixes

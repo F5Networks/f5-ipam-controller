@@ -5,6 +5,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -26,25 +27,34 @@ var (
 	buildInfo string
 
 	// Flag sets and supported flags
-	flags         *flag.FlagSet
-	globalFlags   *flag.FlagSet
-	providerFlags *flag.FlagSet
+	flags          *flag.FlagSet
+	globalFlags    *flag.FlagSet
+	basicProvFlags *flag.FlagSet
+	ibFlags        *flag.FlagSet
 
 	// Global
 	logLevel *string
 	orch     *string
 	provider *string
 
-	// Provider
+	// Default Provider
 	iprange *string
 
-	printVersion     *bool
+	// Infoblox
+	ibHost     *string
+	ibVersion  *string
+	ibPort     *int
+	ibUsername *string
+	ibPassword *string
+
+	printVersion *bool
 )
 
 func init() {
 	flags = flag.NewFlagSet("main", flag.ContinueOnError)
 	globalFlags = flag.NewFlagSet("Global", flag.ContinueOnError)
-	providerFlags = flag.NewFlagSet("Provider", flag.ContinueOnError)
+	basicProvFlags = flag.NewFlagSet("Default Provider", flag.ContinueOnError)
+	ibFlags = flag.NewFlagSet("Infoblox", flag.ContinueOnError)
 
 	//Flag terminal wrapping
 	var err error
@@ -64,26 +74,45 @@ func init() {
 	provider = globalFlags.String("ip-provider", DefaultProvider,
 		"Required, the IPAM system that the controller will interface with.")
 
-	iprange = providerFlags.String("ip-range", "",
+	iprange = basicProvFlags.String("ip-range", "",
 		"Optional, the Default Provider needs iprange to build pools of IP Addresses")
 
 	printVersion = globalFlags.Bool("version", false,
 		"Optional, print version and exit.")
 
+	// Infoblox flags
+	ibHost = ibFlags.String("infoblox-grid-host", "",
+		"Required for infoblox, the grid manager host IP.")
+	ibVersion = ibFlags.String("infoblox-wapi-version", "",
+		"Required for infoblox, the Web API version.")
+	ibPort = ibFlags.Int("infoblox-wapi-port", 443,
+		"Optional for infoblox, the Web API port.")
+	ibUsername = ibFlags.String("infoblox-username", "",
+		"Required for infoblox, the login username.")
+	ibPassword = ibFlags.String("infoblox-password", "",
+		"Required for infoblox, the login password.")
+
 	globalFlags.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "  Global:\n%s\n", globalFlags.FlagUsagesWrapped(width))
 	}
 
-	providerFlags.Usage = func() {
-		_, _ = fmt.Fprintf(os.Stderr, "  Provider:\n%s\n", providerFlags.FlagUsagesWrapped(width))
+	basicProvFlags.Usage = func() {
+		_, _ = fmt.Fprintf(os.Stderr, "  Default Provider:\n%s\n", basicProvFlags.FlagUsagesWrapped(width))
 	}
+
+	ibFlags.Usage = func() {
+		_, _ = fmt.Fprintf(os.Stderr, "  Infoblox Provider:\n%s\n", ibFlags.FlagUsagesWrapped(width))
+	}
+
 	flags.AddFlagSet(globalFlags)
-	flags.AddFlagSet(providerFlags)
+	flags.AddFlagSet(basicProvFlags)
+	flags.AddFlagSet(ibFlags)
 
 	flags.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s\n", os.Args[0])
 		globalFlags.Usage()
-		providerFlags.Usage()
+		basicProvFlags.Usage()
+		ibFlags.Usage()
 	}
 }
 
@@ -109,6 +138,15 @@ func verifyArgs() error {
 	}
 	*iprange = strings.Trim(*iprange, "\"")
 	*iprange = strings.Trim(*iprange, "'")
+
+	if *provider == manager.InfobloxProvider {
+		if len(*ibHost) == 0 || len(*ibVersion) == 0 {
+			return fmt.Errorf("missing required Infoblox parameter")
+		} else if len(*ibUsername) == 0 || len(*ibPassword) == 0 {
+			return fmt.Errorf("missing Infoblox credentials")
+		}
+	}
+
 	return nil
 }
 
@@ -136,10 +174,20 @@ func main() {
 		os.Exit(1)
 	}
 	mgrParams := manager.Params{
-		Provider:          *provider,
-		IPAMManagerParams: manager.IPAMManagerParams{Range: *iprange},
+		Provider: *provider,
 	}
-	mgrParams.Range = *iprange
+	switch *provider {
+	case manager.F5IPAMProvider:
+		mgrParams.IPAMManagerParams = manager.IPAMManagerParams{Range: *iprange}
+	case manager.InfobloxProvider:
+		mgrParams.InfobloxParams = manager.InfobloxParams{
+			Host:     *ibHost,
+			Version:  *ibVersion,
+			Port:     strconv.Itoa(*ibPort),
+			Username: *ibUsername,
+			Password: *ibPassword,
+		}
+	}
 	mgr, err := manager.NewManager(mgrParams)
 	if err != nil {
 		log.Errorf("Unable to initialize manager: %v", err)
