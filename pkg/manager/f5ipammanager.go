@@ -51,6 +51,7 @@ func (ipMgr *IPAMManager) IsPersistent() bool {
 func (ipMgr *IPAMManager) CreateARecord(req ipamspec.IPAMRequest) bool {
 	if req.IPAddr == "" || (req.HostName == "" && req.Key == "") {
 		log.Errorf("[IPMG] Invalid Request to Create A Record: %v", req.String())
+		return false
 	}
 	if !isIPV4Addr(req.IPAddr) {
 		log.Errorf("[IPMG] Unable to Create 'A' Record, as Invalid IP Address Provided")
