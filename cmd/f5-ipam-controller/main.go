@@ -41,12 +41,12 @@ var (
 	iprange *string
 
 	// Infoblox
-	ibHost     *string
-	ibVersion  *string
-	ibPort     *int
-	ibUsername *string
-	ibPassword *string
-
+	ibHost       *string
+	ibVersion    *string
+	ibPort       *int
+	ibUsername   *string
+	ibPassword   *string
+	ibLabelMap   *string
 	printVersion *bool
 )
 
@@ -91,6 +91,8 @@ func init() {
 		"Required for infoblox, the login username.")
 	ibPassword = ibFlags.String("infoblox-password", "",
 		"Required for infoblox, the login password.")
+	ibLabelMap = ibFlags.String("infoblox-labels", "",
+		"Required for mapping the infoblox's netview, dnsview and cidr to IPAM labels")
 
 	globalFlags.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "  Global:\n%s\n", globalFlags.FlagUsagesWrapped(width))
@@ -144,6 +146,8 @@ func verifyArgs() error {
 			return fmt.Errorf("missing required Infoblox parameter")
 		} else if len(*ibUsername) == 0 || len(*ibPassword) == 0 {
 			return fmt.Errorf("missing Infoblox credentials")
+		} else if len(*ibLabelMap) == 0 {
+			return fmt.Errorf("missing Infoblox Labels")
 		}
 	}
 
@@ -181,11 +185,12 @@ func main() {
 		mgrParams.IPAMManagerParams = manager.IPAMManagerParams{Range: *iprange}
 	case manager.InfobloxProvider:
 		mgrParams.InfobloxParams = manager.InfobloxParams{
-			Host:     *ibHost,
-			Version:  *ibVersion,
-			Port:     strconv.Itoa(*ibPort),
-			Username: *ibUsername,
-			Password: *ibPassword,
+			Host:       *ibHost,
+			Version:    *ibVersion,
+			Port:       strconv.Itoa(*ibPort),
+			Username:   *ibUsername,
+			Password:   *ibPassword,
+			IbLabelMap: *ibLabelMap,
 		}
 	}
 	mgr, err := manager.NewManager(mgrParams)
