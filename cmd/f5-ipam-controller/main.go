@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"golang.org/x/crypto/ssh/terminal"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
 	"syscall"
+
+	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/F5Networks/f5-ipam-controller/pkg/controller"
 	"github.com/F5Networks/f5-ipam-controller/pkg/manager"
@@ -71,7 +72,7 @@ func init() {
 	logLevel = globalFlags.String("log-level", "INFO", "Optional, logging level.")
 	orch = globalFlags.String("orchestration", "",
 		"Required, orchestration that the controller is running in.")
-	provider = globalFlags.String("ip-provider", DefaultProvider,
+	provider = globalFlags.String("ipam-provider", DefaultProvider,
 		"Required, the IPAM system that the controller will interface with.")
 
 	iprange = basicProvFlags.String("ip-range", "",
