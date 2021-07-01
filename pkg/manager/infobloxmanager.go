@@ -17,6 +17,8 @@
 package manager
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/F5Networks/f5-ipam-controller/pkg/ipamspec"
 	"github.com/F5Networks/f5-ipam-controller/pkg/utils"
 	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
@@ -29,17 +31,25 @@ const (
 )
 
 type InfobloxParams struct {
-	Host     string
-	Version  string
-	Port     string
-	Username string
-	Password string
+	Host       string
+	Version    string
+	Port       string
+	Username   string
+	Password   string
+	IbLabelMap string
 }
 
 type InfobloxManager struct {
 	connector *ibxclient.Connector
 	objMgr    *ibxclient.ObjectManager
 	ea        ibxclient.EA
+	IBLabels  map[string]IBParam
+}
+
+type IBParam struct {
+	NetView string `json:"netView"`
+	DNSView string `json:"dnsView"`
+	CIDR    string `json:"cidr"`
 }
 
 func NewInfobloxManager(params InfobloxParams) (*InfobloxManager, error) {
@@ -77,11 +87,38 @@ func NewInfobloxManager(params InfobloxParams) (*InfobloxManager, error) {
 		}
 	}
 
-	return &InfobloxManager{
+	labels, err := ParseLabels(params.IbLabelMap)
+	if err != nil {
+		return nil, err
+	}
+
+	ibMgr := &InfobloxManager{
 		connector: connector,
 		objMgr:    objMgr,
 		ea:        ibxclient.EA{EAKey: EAVal},
-	}, nil
+		IBLabels:  labels,
+	}
+
+	// Validating that netView, dnsView, CIDR exist on infoblox Server
+	for _, parameter := range labels {
+		result, err := ibMgr.validateIPAMLabels(parameter.NetView, parameter.DNSView, parameter.CIDR)
+		if !result {
+			return nil, err
+		}
+	}
+	return ibMgr, nil
+}
+
+func ParseLabels(params string) (map[string]IBParam, error) {
+	ibLabelMap := make(map[string]IBParam)
+	err := json.Unmarshal([]byte(params), &ibLabelMap)
+	if err != nil {
+		return nil, err
+	}
+	for label, ibParam := range ibLabelMap {
+		ibLabelMap[label] = ibParam
+	}
+	return ibLabelMap, nil
 }
 
 func (infMgr *InfobloxManager) IsPersistent() bool {
@@ -97,6 +134,8 @@ func (infMgr *InfobloxManager) CreateARecord(req ipamspec.IPAMRequest) bool {
 		log.Errorf("[IPMG] Unable to Create 'A' Record, as Invalid IP Address Provided")
 		return false
 	}
+
+
 
 	_, err := infMgr.objMgr.CreateARecord(
 		req.NetView,
@@ -194,4 +233,19 @@ func (infMgr *InfobloxManager) getARecords(req ipamspec.IPAMRequest) []ibxclient
 		return nil
 	}
 	return res
+}
+
+func (infMgr *InfobloxManager) validateIPAMLabels(netView, dnsView, cidr string) (bool, error) {
+	_, err := infMgr.objMgr.GetNetworkView(netView)
+	if err != nil {
+		return false, err
+	}
+	if len(dnsView) == 0 {
+		return false, fmt.Errorf("dnsView should not be empty")
+	}
+	_, err = infMgr.objMgr.GetNetwork(netView, cidr, infMgr.ea)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
