@@ -32,7 +32,7 @@ The F5 IPAM Controller acts as an interface to CIS to provide an IP address from
 | PARAMETER | TYPE | REQUIRED | DESCRIPTION |
 | ------ | ------ | ------ | ------ |
 | orchestration | String | Required | The orchestration parameter holds the orchestration environment i.e. Kubernetes. |
-| ip-provider | String | Required |  ip-provider parameter holds the IP provider that holds the ownership of providing IP addresses. Default is *f5-ip-provider*. |
+| ipam-provider | String | Required |  ipam-provider parameter holds the IP provider that holds the ownership of providing IP addresses such as infoblox, f5-ip-provider. Default is *f5-ip-provider*. |
 | log-level | String | Optional |  Log level parameter specify various logging level such as DEBUG, INFO, WARNING, ERROR, CRITICAL. |
 
 **Deployment Options of Provider (f5-ip-provider)**
@@ -45,6 +45,7 @@ The F5 IPAM Controller acts as an interface to CIS to provide an IP address from
 
 | PARAMETER | TYPE | REQUIRED | DESCRIPTION |
 | ------ | ------ | ------ | ------ |
+| infoblox-labels | String | Required | infoblox labels holds the mappings for infoblox's netView, dnsView and CIDR |
 | infoblox-grid-host | String | Required |  URL (or IP Address) of Infoblox Grid Host |
 | infoblox-wapi-port | String | Required | Port that the Infoblox Server listens on |
 | infoblox-wapi-version | String | Required | Web API version of Infoblox
@@ -147,8 +148,10 @@ spec:
       - args:
         - --orchestration=kubernetes
         - --log-level=DEBUG
-        - --ip-provider
+        - --ipam-provider
         - infoblox
+        - --infoblox-labels
+        - '{"Dev" :{"netView": "default", "dnsView": "default", "cidr": "172.16.4.0/24"},"Test" :{"netView": "test", "dnsView": "test", "cidr": "172.16.5.0/24"}}'
         - --infoblox-grid-host
         - 10.144.75.2
         - --infoblox-wapi-port=443
@@ -278,3 +281,4 @@ spec:
 
 - FIC does not allocate the last IP address specified in the ip     range.
 - Updating the --ip-range in FIC deployment is an issue.
+- Restarting FIC with infoblox ipam provider holds/allocate more ip addresses in infoblox.

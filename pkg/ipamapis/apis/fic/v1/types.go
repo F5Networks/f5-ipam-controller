@@ -43,9 +43,7 @@ type HostSpec struct {
 	Key       string `json:"key,omitempty"`
 	IPAMLabel string `json:"ipamLabel,omitempty"`
 
-	CIDR    string `json:"cidr,omitempty"`
-	NetView string `json:"netView,omitempty"`
-	DNSView string `json:"dnsView,omitempty"`
+	CIDR string `json:"cidr,omitempty"`
 }
 
 type F5IPAMStatus struct {
@@ -59,9 +57,7 @@ type IPSpec struct {
 	Key       string `json:"key,omitempty"`
 	IPAMLabel string `json:"ipamLabel,omitempty"`
 
-	CIDR    string `json:"cidr,omitempty"`
-	NetView string `json:"netView,omitempty"`
-	DNSView string `json:"dnsView,omitempty"`
+	CIDR string `json:"cidr,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
