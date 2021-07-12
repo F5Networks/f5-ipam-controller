@@ -91,7 +91,15 @@ func (ctlr *Controller) runController() {
 			if ipAddr != "" {
 				log.Debugf("[CORE] Allocated IP: %v for Request: %v", ipAddr, req.String())
 				req.IPAddr = ipAddr
-				ctlr.Manager.CreateARecord(req)
+				ok := ctlr.Manager.CreateARecord(req)
+				if !ok {
+					req.IPAddr = ipAddr
+					ctlr.Manager.ReleaseIPAddress(req)
+					log.Errorf("[CORE] Unable to Create A Record with hostname: %v", req.HostName)
+					log.Infof("[CORE] Releasing Allocated IP: %v", ipAddr)
+
+					break
+				}
 				go sendResponse(req, ipAddr)
 			}
 		case ipamspec.DELETE:
