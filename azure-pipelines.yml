@@ -23,6 +23,7 @@ variables:
   quay_path: 'quay.io/f5networks/f5-ipam-controller-devel'
   redhat_prj_name: 'f5-ipam-controller'
   redhat_tag: '$(BUILD_VERSION)-rhel8'
+  docker_version: '$(BUILD_VERSION)'
   docker_repo: 'f5networks/f5-ipam-controller'
 
 steps:
