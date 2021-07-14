@@ -1,11 +1,18 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
 
-Next Release
+0.1.4
 ------------
 Added Functionality
 ```````````````````
-* Add New Provider Infoblox with IPV4 Support
+* F5 IPAM Controller supports InfoBlox (Preview - Available for VirtualServer CR only. See `documentation <https://github.com/F5Networks/f5-ipam-controller/blob/main/README.md>`_).
+
+Known Issues
+```````````
+* With InfoBlox integration,
+    * FIC restart allocates multiple IP addresses on InfoBlox
+    * Update ip-range is not working as expected
+    * TransportServer CR and Service Type LoadBalancer are not supported
 
 0.1.3
 -------------
