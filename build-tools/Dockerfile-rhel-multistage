@@ -49,7 +49,7 @@ RUN microdnf --enablerepo=ubi-8-baseos \
       install --nodocs shadow-utils \
       python36 && \
     microdnf update && \
-    microdnf --enablerepo=ubi-8-baseos --enablerepo=ubi-8-appstream update nss-tools nss-softokn nss-util && \
+    microdnf --enablerepo=ubi-8-baseos --enablerepo=ubi-8-appstream update nss-tools nss-softokn nss-util  && \
     adduser ctlr && \
     microdnf remove shadow-utils && \
     microdnf clean all \
