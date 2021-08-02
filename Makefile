@@ -69,7 +69,7 @@ prod-build: pre-build
 	@echo "Building with minimal instrumentation..."
 	LICENSE=$(LICENSE) RUN_TESTS=1 BASE_OS=$(BASE_OS) $(CURDIR)/build-tools/build-image.sh
 
-prod-quick: prod-build-quick
+prod-quick: fmt vet prod-build-quick
 
 prod-build-quick: pre-build
 	@echo "Building without running tests..."
