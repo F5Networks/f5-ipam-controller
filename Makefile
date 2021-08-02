@@ -67,22 +67,22 @@ pre-build:
 
 prod-build: pre-build
 	@echo "Building with minimal instrumentation..."
-	LICENSE=$(LICENSE) RUN_TESTS=1 BASE_OS=$(BASE_OS) $(CURDIR)/build-tools/build-image.sh
+
+	docker build --build-arg RUN_TESTS=1 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.$(BASE_OS) .
 
 prod-quick: fmt vet prod-build-quick
 
 prod-build-quick: pre-build
 	@echo "Building without running tests..."
-	LICENSE=$(LICENSE) RUN_TESTS=0 BASE_OS=$(BASE_OS) $(CURDIR)/build-tools/build-image.sh
+	docker build --build-arg RUN_TESTS=0 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.$(BASE_OS) .
 
 debug: pre-build
 	@echo "Building with debug support..."
-	LICENSE=$(LICENSE) DEBUG=0 RUN_TESTS=0 BASE_OS=$(BASE_OS) $(CURDIR)/build-tools/build-image.sh
-
+	docker build --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.debug .
 
 dev-licences: pre-build
 	@echo "Building without running tests..."
-	LICENSE=true RUN_TESTS=0 BASE_OS=$(BASE_OS) $(CURDIR)/build-tools/build-image.sh
+	docker build --build-arg LICENSE=1 --build-arg RUN_TESTS=0 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.$(BASE_OS) .
 
 fmt:
 	@echo "Enforcing code formatting using 'go fmt'..."
@@ -93,7 +93,7 @@ vet:
 	$(CURDIR)/build-tools/vet.sh
 
 devel-image:
-	TARGET=builder BASE_OS=$(BASE_OS) ./build-tools/build-image.sh
+	docker build --build-arg RUN_TESTS=0 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller-devel:latest -f build-tools/Dockerfile.$(BASE_OS) .
 
 # Enable certain funtionalities only on a developer build
 dev-patch:
@@ -118,6 +118,17 @@ _docs: always-build
 docker-test:
 	rm -rf docs/_build
 	./build-tools/docker-docs.sh ./build-tools/make-docs.sh
+
+docker-tag:
+ifdef tag
+	docker tag f5-ipam-controller:latest $(tag)
+	docker push $(tag)
+else
+	@echo "Define a tag to push. Eg: make docker-tag tag=username/f5-ipam-controller:dev"
+endif
+
+docker-devel-tag:
+	docker push f5-ipam-controller-devel:latest
 
 # one-time html build using a docker container
 .PHONY: docker-html
