@@ -1,0 +1,85 @@
+FROM golang:1.15 as builder
+
+ARG REPOPATH=$GOPATH/src/github.com/F5Networks/f5-ipam-controller
+ARG RUN_TESTS
+ARG COVERALLS_TOKEN
+ARG BUILD_VERSION
+ARG BUILD_INFO
+ARG LICENSE
+
+WORKDIR $REPOPATH
+COPY go.mod go.sum ./
+ENV GO111MODULE on
+RUN go mod download
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -ldflags "-extldflags \"-static\" -X main.version=${BUILD_VERSION} -X main.buildInfo=${BUILD_INFO}" -o /bin/f5-ipam-controller $REPOPATH/cmd/f5-ipam-controller
+
+# licensee dependencies
+RUN apt-get update && apt-get install -y ruby bundler cmake pkg-config git libssl-dev libpng-dev go-md2man && gem install licensee
+
+COPY ./build-tools/help.md /tmp/
+
+RUN GO111MODULE=off && go get github.com/wadey/gocovmerge && \
+	go get golang.org/x/tools/cmd/cover && \
+	go get github.com/mattn/goveralls && \
+	go get github.com/onsi/ginkgo/ginkgo && \
+	go get github.com/onsi/gomega && \
+	go-md2man -in /tmp/help.md -out /help.1 && rm -f /tmp/help.md && \
+	/bin/bash -ex $REPOPATH/build-tools/rel-build.sh
+
+
+FROM registry.redhat.io/ubi7/ubi-minimal
+
+LABEL name="f5networks/f5-ipam-controller" \
+      vendor="F5 Networks" \
+      # version - should be passed in via docker build
+      url="http://clouddocs.f5.com/products/connectors/f5-ipam-controller/latest/" \
+      summary="F5 IPAM Controller" \
+      description="IP Management Controller" \
+      run='docker run --name ${NAME} ${IMAGE} /app/bin/f5-ipam-controller' \
+      io.k8s.description="Manages F5 BIG-IP from Kubernetes" \
+      io.k8s.display-name="F5 BIG-IP Controller for Kubernetes" \
+      io.openshift.expose-services="" \
+      io.openshift.tags="f5,f5networks,bigip,openshift,router"
+
+ENV APPPATH /app
+
+
+ARG BUILD_VERSION
+ARG BUILD_INFO
+
+WORKDIR $APPPATH
+
+
+RUN mkdir -p "$APPPATH/bin"
+
+COPY --from=builder "/help.1" /
+COPY LICENSE /licenses/
+
+RUN microdnf update && \
+    microdnf \
+      --enablerepo=ubi-7-server-devtools-rpms --enablerepo=ubi-7-server-extras-rpms  \
+      --enablerepo=ubi-7-server-optional-rpms --enablerepo=ubi-server-rhscl-7-rpms \
+      install --nodocs \
+      rh-python36 git shadow-utils && \
+    microdnf \
+    --enablerepo=ubi-7-server-devtools-rpms --enablerepo=ubi-7-server-extras-rpms \
+    --enablerepo=ubi-7-server-optional-rpms --enablerepo=ubi-server-rhscl-7-rpms \
+    update nss-tools nss-softokn nss-util && \
+    adduser ctlr && \
+    microdnf remove  \
+    fipscheck fipscheck-lib    \
+    libgnome-keyring \
+    libedit openssh openssh-clients \
+    perl-Git  perl-TermReadKey  perl-macros git-core git-core-doc git less \
+    rsync shadow-utils  && \
+    microdnf clean all \
+    && echo "{\"version\": \"${BUILD_VERSION}\", \"build\": \"${BUILD_INFO}\"}" > $APPPATH/VERSION_BUILD.json \
+    && chown -R ctlr "$APPPATH" && chmod -R 755 "$APPPATH"
+
+USER ctlr
+
+COPY --from=builder /bin/f5-ipam-controller $APPPATH/bin
+
+CMD ["/app/bin/f5-ipam-controller"]

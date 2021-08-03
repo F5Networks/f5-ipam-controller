@@ -1,0 +1,58 @@
+FROM golang:1.15 as builder
+
+ARG REPOPATH=$GOPATH/src/github.com/F5Networks/f5-ipam-controller
+ARG RUN_TESTS
+ARG COVERALLS_TOKEN
+ARG BUILD_VERSION
+ARG BUILD_INFO
+ARG LICENSE
+
+WORKDIR $REPOPATH
+COPY go.mod go.sum ./
+ENV GO111MODULE on
+RUN go mod download
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -ldflags "-extldflags \"-static\" -X main.version=${BUILD_VERSION} -X main.buildInfo=${BUILD_INFO}" -o /bin/f5-ipam-controller $REPOPATH/cmd/f5-ipam-controller
+
+# licensee dependencies
+RUN apt-get update && apt-get install -y ruby bundler cmake pkg-config git libssl-dev libpng-dev && gem install licensee
+
+RUN GO111MODULE=off && go get github.com/wadey/gocovmerge && \
+	go get golang.org/x/tools/cmd/cover && \
+	go get github.com/mattn/goveralls && \
+	go get github.com/onsi/ginkgo/ginkgo && \
+	go get github.com/onsi/gomega && \
+	/bin/bash -ex $REPOPATH/build-tools/rel-build.sh
+
+FROM python:3.6-slim-buster
+
+ENV APPPATH /app
+
+ARG BUILD_VERSION
+ARG BUILD_INFO
+
+RUN mkdir -p "$APPPATH/bin"  \
+ && chmod -R 755 "$APPPATH" \
+ && adduser --disabled-password --gecos "" ctlr
+
+WORKDIR $APPPATH
+
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git \
+    && apt-get upgrade -y \
+    && apt-get remove -y git \
+    # FIXME: Remove this fix once libidn is no longer vulnerable
+    && apt-get remove -y libidn11 \
+    && echo "{\"version\": \"${BUILD_VERSION}\", \"build\": \"${BUILD_INFO}\"}" > $APPPATH/VERSION_BUILD.json
+
+
+COPY --from=builder "/go/out/bin/f5-ipam-controller" $APPPATH/bin
+COPY --from=builder /go/bin/dlv /app/bin
+
+USER ctlr
+EXPOSE 40000
+
+# Run the run application in the projects bin directory.
+CMD [  "/app/bin/f5-ipam-controller" ]
