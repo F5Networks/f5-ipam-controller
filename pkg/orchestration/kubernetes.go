@@ -55,8 +55,8 @@ const (
 )
 
 type rqKey struct {
-	rsc       *ficV1.F5IPAM
-	oldRsc    *ficV1.F5IPAM
+	rsc       *ficV1.IPAM
+	oldRsc    *ficV1.IPAM
 	Operation string
 }
 
@@ -164,7 +164,7 @@ func (k8sc *K8sIPAMClient) Stop() {
 func (k8sc *K8sIPAMClient) enqueueIPAM(obj interface{}) {
 
 	key := &rqKey{
-		rsc:       obj.(*ficV1.F5IPAM),
+		rsc:       obj.(*ficV1.IPAM),
 		oldRsc:    nil,
 		Operation: CREATE,
 	}
@@ -175,8 +175,8 @@ func (k8sc *K8sIPAMClient) enqueueIPAM(obj interface{}) {
 
 func (k8sc *K8sIPAMClient) enqueueUpdatedIPAM(old, cur interface{}) {
 	key := &rqKey{
-		rsc:       cur.(*ficV1.F5IPAM),
-		oldRsc:    old.(*ficV1.F5IPAM),
+		rsc:       cur.(*ficV1.IPAM),
+		oldRsc:    old.(*ficV1.IPAM),
 		Operation: UPDATE,
 	}
 	log.Debugf("Enqueueing on Update: %v/%v", key.rsc.Namespace, key.rsc.Name)
@@ -186,7 +186,7 @@ func (k8sc *K8sIPAMClient) enqueueUpdatedIPAM(old, cur interface{}) {
 
 func (k8sc *K8sIPAMClient) enqueueDeletedIPAM(obj interface{}) {
 	key := &rqKey{
-		rsc:       obj.(*ficV1.F5IPAM),
+		rsc:       obj.(*ficV1.IPAM),
 		oldRsc:    nil,
 		Operation: DELETE,
 	}
@@ -223,7 +223,7 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 	case CREATE:
 		// A new CIS has created a new IPAM CR or FIC restarted
 
-		// On FIC restart build already allocated IPSpec Store from the Status of F5IPAM CR
+		// On FIC restart build already allocated IPSpec Store from the Status of IPAM CR
 		for _, ipSpec := range rKey.rsc.Status.IPStatus {
 			ipamReq := ipamspec.IPAMRequest{
 				Metadata: ResourceMeta{
@@ -346,7 +346,7 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 				metadata := resp.Request.Metadata.(ResourceMeta)
 				ipamRsc, err := k8sc.ipamCli.Get(metadata.namespace, metadata.name)
 				if err != nil {
-					log.Errorf("Unable to find F5IPAM: %v/%v to update. Error: %v",
+					log.Errorf("Unable to find IPAM: %v/%v to update. Error: %v",
 						metadata.namespace, metadata.name, err)
 					break
 				}
@@ -375,7 +375,7 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 
 				_, err = k8sc.ipamCli.UpdateStatus(ipamRsc)
 				if err != nil {
-					log.Errorf("Unable to Update F5IPAM: %v/%v\t Error: %v",
+					log.Errorf("Unable to Update IPAM: %v/%v\t Error: %v",
 						metadata.namespace,
 						metadata.name,
 						err.Error(),
@@ -389,7 +389,7 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 				)
 				break
 			}
-			// If response status is fail then ensure Entry from Status of f5ipam CR is removed
+			// If response status is fail then ensure Entry from Status of ipam CR is removed
 			removeStatusEntry = true
 			fallthrough
 
@@ -398,7 +398,7 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 				metadata := resp.Request.Metadata.(ResourceMeta)
 				ipamRsc, err := k8sc.ipamCli.Get(metadata.namespace, metadata.name)
 				if err != nil {
-					log.Errorf("Unable to find F5IPAM: %v/%v to update", metadata.namespace, metadata.name)
+					log.Errorf("Unable to find IPAM: %v/%v to update", metadata.namespace, metadata.name)
 					break
 				}
 				index := -1
@@ -418,7 +418,7 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 					)
 					_, err = k8sc.ipamCli.UpdateStatus(ipamRsc)
 					if err != nil {
-						log.Errorf("Unable to Update F5IPAM: %v/%v\t Error: %v",
+						log.Errorf("Unable to Update IPAM: %v/%v\t Error: %v",
 							metadata.namespace,
 							metadata.name,
 							err.Error(),
