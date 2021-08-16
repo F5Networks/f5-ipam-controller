@@ -47,10 +47,6 @@ func (ipMgr *IPAMManager) IsPersistent() bool {
 	return false
 }
 
-func (ipMgr *IPAMManager) validateIPAMLabels(netView, dnsView, cidr string) (bool, error) {
-	return true, nil
-}
-
 // Creates an A record
 func (ipMgr *IPAMManager) CreateARecord(req ipamspec.IPAMRequest) bool {
 	if req.IPAddr == "" || (req.HostName == "" && req.Key == "") {

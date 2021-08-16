@@ -51,6 +51,7 @@ The F5 IPAM Controller acts as an interface to CIS to provide an IP address from
 | infoblox-wapi-version | String | Required | Web API version of Infoblox
 | infoblox-username | String | Required | Username of Infoblox User |
 | infoblox-username | String | Required | Password of the given Infoblox User |
+| infoblox-netview | String | Required | Netview from which IP addresses needs to be allocated |
 
 
 Note: On how to configure these Configuration Options, please refer to IPAM Deployment YAML example in below.
@@ -151,7 +152,7 @@ spec:
         - --ipam-provider
         - infoblox
         - --infoblox-labels
-        - '{"Dev" :{"netView": "default", "dnsView": "default", "cidr": "172.16.4.0/24"},"Test" :{"netView": "test", "dnsView": "test", "cidr": "172.16.5.0/24"}}'
+        - '{"Dev" :{"dnsView": "default", "cidr": "172.16.4.0/24"},"Test" :{"dnsView": "test", "cidr": "172.16.5.0/24"}}'
         - --infoblox-grid-host
         - 10.144.75.2
         - --infoblox-wapi-port=443
@@ -161,6 +162,8 @@ spec:
         - user
         - --infoblox-password
         - paswd
+        - --infoblox-netview
+        - default
 
         command:
         - /app/bin/f5-ipam-controller
