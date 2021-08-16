@@ -28,7 +28,6 @@ RUN GO111MODULE=off && go get github.com/wadey/gocovmerge && \
 	go-md2man -in /tmp/help.md -out /help.1 && rm -f /tmp/help.md && \
 	/bin/bash -ex $REPOPATH/build-tools/rel-build.sh
 
-
 FROM registry.redhat.io/ubi7/ubi-minimal
 
 LABEL name="f5networks/f5-ipam-controller" \
@@ -67,7 +66,7 @@ RUN microdnf update && \
     --enablerepo=ubi-7-server-devtools-rpms --enablerepo=ubi-7-server-extras-rpms \
     --enablerepo=ubi-7-server-optional-rpms --enablerepo=ubi-server-rhscl-7-rpms \
     update nss-tools nss-softokn nss-util && \
-    adduser ctlr && \
+    adduser -u 1200 ctlr && \
     microdnf remove  \
     fipscheck fipscheck-lib    \
     libgnome-keyring \

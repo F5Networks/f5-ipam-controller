@@ -37,7 +37,7 @@ ARG BUILD_INFO
 
 RUN mkdir -p "$APPPATH/bin" \
  && chmod -R 755 "$APPPATH" \
- && adduser --disabled-password --gecos "" ctlr
+ && adduser --disabled-password --gecos "" -u 1200 ctlr
 
 WORKDIR $APPPATH
 
