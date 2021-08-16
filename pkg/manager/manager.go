@@ -25,7 +25,6 @@ import (
 // Manager defines the interface that the IPAM system should implement
 type Manager interface {
 	IsPersistent() bool
-	validateIPAMLabels(netView, dnsView, cidr string) (bool, error)
 	// Creates an A record
 	CreateARecord(req ipamspec.IPAMRequest) bool
 	// Deletes an A record and releases the IP address
@@ -64,6 +63,7 @@ func NewManager(params Params) (Manager, error) {
 			Username:   params.Username,
 			Password:   params.Password,
 			IbLabelMap: params.IbLabelMap,
+			NetView:    params.NetView,
 		}
 		return NewInfobloxManager(ibxParams)
 	default:

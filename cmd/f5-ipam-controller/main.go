@@ -49,6 +49,7 @@ var (
 	ibPassword   *string
 	ibLabelMap   *string
 	printVersion *bool
+	ibNetView    *string
 )
 
 func init() {
@@ -93,7 +94,9 @@ func init() {
 	ibPassword = ibFlags.String("infoblox-password", "",
 		"Required for infoblox, the login password.")
 	ibLabelMap = ibFlags.String("infoblox-labels", "",
-		"Required for mapping the infoblox's netview, dnsview and cidr to IPAM labels")
+		"Required for mapping the infoblox's dnsview and cidr to IPAM labels")
+	ibNetView = ibFlags.String("infoblox-netview", "",
+		"Required for allocation of IP addresses")
 
 	globalFlags.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "  Global:\n%s\n", globalFlags.FlagUsagesWrapped(width))
@@ -149,6 +152,8 @@ func verifyArgs() error {
 			return fmt.Errorf("missing Infoblox credentials")
 		} else if len(*ibLabelMap) == 0 {
 			return fmt.Errorf("missing Infoblox Labels")
+		} else if len(*ibNetView) == 0 {
+			return fmt.Errorf("missing Infoblox NetView")
 		}
 	}
 
@@ -192,6 +197,7 @@ func main() {
 			Username:   *ibUsername,
 			Password:   *ibPassword,
 			IbLabelMap: *ibLabelMap,
+			NetView:    *ibNetView,
 		}
 	}
 	mgr, err := manager.NewManager(mgrParams)

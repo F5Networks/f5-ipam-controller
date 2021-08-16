@@ -38,17 +38,18 @@ type InfobloxParams struct {
 	Username   string
 	Password   string
 	IbLabelMap string
+	NetView    string
 }
 
 type InfobloxManager struct {
 	connector *ibxclient.Connector
 	objMgr    *ibxclient.ObjectManager
 	ea        ibxclient.EA
+	NetView   string
 	IBLabels  map[string]IBParam
 }
 
 type IBParam struct {
-	NetView string `json:"netView"`
 	DNSView string `json:"dnsView"`
 	CIDR    string `json:"cidr"`
 }
@@ -98,11 +99,15 @@ func NewInfobloxManager(params InfobloxParams) (*InfobloxManager, error) {
 		objMgr:    objMgr,
 		ea:        ibxclient.EA{EAKey: EAVal},
 		IBLabels:  labels,
+		NetView:   params.NetView,
 	}
-
-	// Validating that netView, dnsView, CIDR exist on infoblox Server
+	_, err = ibMgr.objMgr.GetNetworkView(ibMgr.NetView)
+	if err != nil {
+		return nil, err
+	}
+	// Validating that dnsView, CIDR exist on infoblox Server
 	for _, parameter := range labels {
-		result, err := ibMgr.validateIPAMLabels(parameter.NetView, parameter.DNSView, parameter.CIDR)
+		result, err := ibMgr.validateIPAMLabels(parameter.DNSView, parameter.CIDR)
 		if !result {
 			return nil, err
 		}
@@ -142,7 +147,7 @@ func (infMgr *InfobloxManager) CreateARecord(req ipamspec.IPAMRequest) bool {
 	}
 
 	_, err := infMgr.objMgr.CreateARecord(
-		req.NetView,
+		infMgr.NetView,
 		req.DNSView,
 		req.HostName,
 		req.CIDR,
@@ -205,7 +210,7 @@ func (infMgr *InfobloxManager) GetNextIPAddress(req ipamspec.IPAMRequest) string
 	if ok := infMgr.getIBParams(&req); !ok {
 		return ""
 	}
-	fixedAddr, err := infMgr.objMgr.AllocateIP(req.NetView, req.CIDR, "", "", "", infMgr.ea)
+	fixedAddr, err := infMgr.objMgr.AllocateIP(infMgr.NetView, req.CIDR, "", "", "", infMgr.ea)
 	if err != nil {
 		log.Errorf("[IPMG] Unable to Get a New IP Address: %+v", req)
 		return ""
@@ -228,7 +233,7 @@ func (infMgr *InfobloxManager) ReleaseIPAddress(req ipamspec.IPAMRequest) {
 	if ok := infMgr.getIBParams(&req); !ok {
 		return
 	}
-	_, err := infMgr.objMgr.ReleaseIP(req.NetView, req.CIDR, req.IPAddr, "")
+	_, err := infMgr.objMgr.ReleaseIP(infMgr.NetView, req.CIDR, req.IPAddr, "")
 	if err != nil {
 		log.Errorf("[IPMG] Unable to Release IP Address: %+v", req)
 	}
@@ -255,15 +260,11 @@ func (infMgr *InfobloxManager) getARecords(req ipamspec.IPAMRequest) []ibxclient
 	return res
 }
 
-func (infMgr *InfobloxManager) validateIPAMLabels(netView, dnsView, cidr string) (bool, error) {
-	_, err := infMgr.objMgr.GetNetworkView(netView)
-	if err != nil {
-		return false, err
-	}
+func (infMgr *InfobloxManager) validateIPAMLabels(dnsView, cidr string) (bool, error) {
 	if len(dnsView) == 0 {
 		return false, fmt.Errorf("dnsView should not be empty")
 	}
-	_, err = infMgr.objMgr.GetNetwork(netView, cidr, infMgr.ea)
+	_, err := infMgr.objMgr.GetNetwork(infMgr.NetView, cidr, infMgr.ea)
 	if err != nil {
 		return false, err
 	}
@@ -276,7 +277,6 @@ func (infMgr *InfobloxManager) getIBParams(req *ipamspec.IPAMRequest) bool {
 		log.Errorf("[IPMG] Invalid Label: %v provided.", req.IPAMLabel)
 		return false
 	}
-	req.NetView = label.NetView
 	req.DNSView = label.DNSView
 	req.CIDR = label.CIDR
 	return true

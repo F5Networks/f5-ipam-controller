@@ -31,7 +31,6 @@ type IPAMRequest struct {
 	Key       string
 	IPAMLabel string
 	CIDR      string
-	NetView   string
 	DNSView   string
 }
 
