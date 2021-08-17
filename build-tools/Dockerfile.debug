@@ -13,7 +13,7 @@ ENV GO111MODULE on
 RUN go mod download
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -ldflags "-extldflags \"-static\" -X main.version=${BUILD_VERSION} -X main.buildInfo=${BUILD_INFO}" -o /bin/f5-ipam-controller $REPOPATH/cmd/f5-ipam-controller
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -ldflags "-extldflags \"-static\" -X main.version=${BUILD_VERSION} -X main.buildInfo=${BUILD_INFO}" -o /bin/f5-ipam-controller $REPOPATH/cmd/f5-ipam-controller
 
 # licensee dependencies
 RUN apt-get update && apt-get install -y ruby bundler cmake pkg-config git libssl-dev libpng-dev && gem install licensee
@@ -56,3 +56,4 @@ EXPOSE 40000
 
 # Run the run application in the projects bin directory.
 CMD [  "/app/bin/f5-ipam-controller" ]
+
