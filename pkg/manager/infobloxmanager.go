@@ -127,10 +127,6 @@ func ParseLabels(params string) (map[string]IBParam, error) {
 	return ibLabelMap, nil
 }
 
-func (infMgr *InfobloxManager) IsPersistent() bool {
-	return true
-}
-
 // CreateARecord Creates an A record
 func (infMgr *InfobloxManager) CreateARecord(req ipamspec.IPAMRequest) bool {
 	if req.IPAddr == "" || req.HostName == "" {
@@ -206,7 +202,7 @@ func (infMgr *InfobloxManager) GetIPAddress(req ipamspec.IPAMRequest) string {
 }
 
 // GetNextIPAddress Gets and reserves the next available IP address
-func (infMgr *InfobloxManager) GetNextIPAddress(req ipamspec.IPAMRequest) string {
+func (infMgr *InfobloxManager) AllocateNextIPAddress(req ipamspec.IPAMRequest) string {
 	if ok := infMgr.getIBParams(&req); !ok {
 		return ""
 	}
@@ -216,16 +212,6 @@ func (infMgr *InfobloxManager) GetNextIPAddress(req ipamspec.IPAMRequest) string
 		return ""
 	}
 	return fixedAddr.IPAddress
-}
-
-// AllocateIPAddress Allocates given IP address
-func (infMgr *InfobloxManager) AllocateIPAddress(req ipamspec.IPAMRequest) bool {
-	//_, err := infMgr.objMgr.AllocateIP(req.NetView, req.CIDR, req.IPAddr, "", "", infMgr.ea)
-	//if err != nil {
-	//	log.Errorf("[IPMG] Unable to Get a New IP Address: %v", req.String())
-	//	return false
-	//}
-	return true
 }
 
 // ReleaseIPAddress Releases an IP address

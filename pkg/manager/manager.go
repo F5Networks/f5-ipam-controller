@@ -24,7 +24,6 @@ import (
 
 // Manager defines the interface that the IPAM system should implement
 type Manager interface {
-	IsPersistent() bool
 	// Creates an A record
 	CreateARecord(req ipamspec.IPAMRequest) bool
 	// Deletes an A record and releases the IP address
@@ -32,9 +31,7 @@ type Manager interface {
 	// Gets IP Address associated with hostname
 	GetIPAddress(req ipamspec.IPAMRequest) string
 	// Gets and reserves the next available IP address
-	GetNextIPAddress(req ipamspec.IPAMRequest) string
-	// Allocates given IP address
-	AllocateIPAddress(req ipamspec.IPAMRequest) bool
+	AllocateNextIPAddress(req ipamspec.IPAMRequest) string
 	// Releases an IP address
 	ReleaseIPAddress(req ipamspec.IPAMRequest)
 }
