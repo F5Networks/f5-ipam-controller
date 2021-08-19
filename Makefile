@@ -21,7 +21,7 @@ all: local-build
 
 test: local-go-test
 
-prod: prod-build
+prod: verify prod-build
 
 verify: fmt vet
 
@@ -68,13 +68,13 @@ pre-build:
 prod-build: pre-build
 	@echo "Building with minimal instrumentation..."
 
-	docker build --build-arg RUN_TESTS=1 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.$(BASE_OS) .
+	docker build --build-arg LICENSE=1 --build-arg RUN_TESTS=1 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.$(BASE_OS) .
 
-prod-quick: fmt vet prod-build-quick
+prod-quick: prod-build-quick
 
 prod-build-quick: pre-build
 	@echo "Building without running tests..."
-	docker build --build-arg RUN_TESTS=0 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.$(BASE_OS) .
+	docker build --build-arg LICENSE=0 --build-arg RUN_TESTS=0 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.$(BASE_OS) .
 
 debug: pre-build
 	@echo "Building with debug support..."
