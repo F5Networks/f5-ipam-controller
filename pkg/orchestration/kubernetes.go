@@ -221,25 +221,6 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 
 	switch rKey.Operation {
 	case CREATE:
-		// A new CIS has created a new IPAM CR or FIC restarted
-
-		// On FIC restart build already allocated IPSpec Store from the Status of IPAM CR
-		for _, ipSpec := range rKey.rsc.Status.IPStatus {
-			ipamReq := ipamspec.IPAMRequest{
-				Metadata: ResourceMeta{
-					name:      rKey.rsc.Name,
-					namespace: rKey.rsc.Namespace,
-				},
-				HostName:  ipSpec.Host,
-				CIDR:      ipSpec.CIDR,
-				IPAMLabel: ipSpec.IPAMLabel,
-				IPAddr:    ipSpec.IP,
-				Key:       ipSpec.Key,
-				Operation: ipamspec.CREATE,
-			}
-			k8sc.reqChan <- ipamReq
-		}
-
 		for _, hostSpec := range rKey.rsc.Spec.HostSpecs {
 			ipamReq := ipamspec.IPAMRequest{
 				Metadata: ResourceMeta{

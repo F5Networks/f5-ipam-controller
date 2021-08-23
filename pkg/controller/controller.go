@@ -59,35 +59,13 @@ func (ctlr *Controller) runController() {
 				ctlr.respChan <- resp
 			}
 
-			// Controller tries to allocate asked IP Address in case of Non-Persistent provider
-			// This happens during Starting of Controller to sync the DB with Initial Requests
-			if !ctlr.Manager.IsPersistent() && req.IPAddr != "" {
-				if ctlr.Manager.AllocateIPAddress(req) {
-					log.Debugf("[CORE] Allocated IP: %v for Request: %v", req.IPAddr, req.String())
-					ctlr.Manager.CreateARecord(req)
-					go sendResponse(req, req.IPAddr)
-				} else {
-					log.Debugf("[CORE] Unable to Allocate asked IPAddress: %v for Request: %v",
-						req.IPAddr, req.String())
-					go func(request ipamspec.IPAMRequest) {
-						resp := ipamspec.IPAMResponse{
-							Request: request,
-							IPAddr:  "",
-							Status:  false,
-						}
-						ctlr.respChan <- resp
-					}(req)
-				}
-				break
-			}
-
 			ipAddr := ctlr.Manager.GetIPAddress(req)
 			if ipAddr != "" {
 				go sendResponse(req, ipAddr)
 				break
 			}
 
-			ipAddr = ctlr.Manager.GetNextIPAddress(req)
+			ipAddr = ctlr.Manager.AllocateNextIPAddress(req)
 			if ipAddr != "" {
 				log.Debugf("[CORE] Allocated IP: %v for Request: %v", ipAddr, req.String())
 				req.IPAddr = ipAddr

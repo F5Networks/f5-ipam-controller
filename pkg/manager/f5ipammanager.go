@@ -43,10 +43,6 @@ func NewIPAMManager(params IPAMManagerParams) (*IPAMManager, error) {
 	return &IPAMManager{provider: prov}, nil
 }
 
-func (ipMgr *IPAMManager) IsPersistent() bool {
-	return false
-}
-
 // Creates an A record
 func (ipMgr *IPAMManager) CreateARecord(req ipamspec.IPAMRequest) bool {
 	if req.IPAddr == "" || (req.HostName == "" && req.Key == "") {
@@ -97,19 +93,9 @@ func (ipMgr *IPAMManager) GetIPAddress(req ipamspec.IPAMRequest) string {
 }
 
 // Gets and reserves the next available IP address
-func (ipMgr *IPAMManager) GetNextIPAddress(req ipamspec.IPAMRequest) string {
+func (ipMgr *IPAMManager) AllocateNextIPAddress(req ipamspec.IPAMRequest) string {
 
-	return ipMgr.provider.GetNextAddr(req.IPAMLabel)
-}
-
-// Allocates this particular ip from the IPAM LABEL
-func (ipMgr *IPAMManager) AllocateIPAddress(req ipamspec.IPAMRequest) bool {
-	if req.IPAMLabel == "" || req.IPAddr == "" {
-		log.Errorf("[IPMG] Invalid Request to Allocate IP Address: %v", req.String())
-		return false
-	}
-
-	return ipMgr.provider.AllocateIPAddress(req.IPAMLabel, req.IPAddr)
+	return ipMgr.provider.AllocateNextIPAddress(req.IPAMLabel)
 }
 
 // Releases an IP address

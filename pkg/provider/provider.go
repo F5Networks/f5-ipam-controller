@@ -118,22 +118,12 @@ func (prov *IPAMProvider) GetIPAddress(ipamLabel, hostname string) string {
 }
 
 // Gets and reserves the next available IP address
-func (prov *IPAMProvider) GetNextAddr(ipamLabel string) string {
+func (prov *IPAMProvider) AllocateNextIPAddress(ipamLabel string) string {
 	if _, ok := prov.ipamLabels[ipamLabel]; !ok {
 		log.Debugf("[PROV] Unsupported IPAM LABEL: %v", ipamLabel)
 		return ""
 	}
 	return prov.store.AllocateIP(ipamLabel)
-}
-
-// Marks an IP address as allocated if it belongs to that IPAM LABEL
-func (prov *IPAMProvider) AllocateIPAddress(ipamLabel, ipAddr string) bool {
-	if _, ok := prov.ipamLabels[ipamLabel]; !ok {
-		log.Debugf("[PROV] Unsupported IPAM LABEL: %v", ipamLabel)
-		return false
-	}
-
-	return prov.store.MarkIPAsAllocated(ipamLabel, ipAddr)
 }
 
 // Releases an IP address
