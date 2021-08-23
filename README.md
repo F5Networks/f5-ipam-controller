@@ -121,9 +121,61 @@ spec:
         image: f5networks/f5-ipam-controller
         imagePullPolicy: IfNotPresent
         name: f5-ipam-controller
+        volumeMounts:
+        - mountPath: /app/cis_ipam.sqlite3
+          name: samplevol
+      initContainers:
+      - command:
+        - chown
+        - 1200:1200
+        - /app/cis_ipam.sqlite3
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        name: f5-ipam-controller-init
+        volumeMounts:
+        - mountPath: /app/cis_ipam.sqlite3
+          name: samplevol
       serviceAccount: ipam-ctlr
       serviceAccountName: ipam-ctlr
+      volumes:
+      - name: samplevol
+        persistentVolumeClaim:
+          claimName: sample-pvc
 ```
+
+#### Example: Persistent Volume using HostPath for IPAM controller deployment with default provider
+```
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: sample-pv
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/cis_ipam.sqlite3"
+    type: FileOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sample-pvc
+  namespace: kube-system
+spec:
+  storageClassName: manual
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 0.1Gi
+```
+
+Kubernetes supports a wide variety of storage options. Refer [link](https://kubernetes.io/docs/concepts/storage/volumes) for more details.
 
 #### Example: F5 IPAM Controller Deployment YAML with Infoblox Provider
 
@@ -279,6 +331,7 @@ spec:
 
 - If No VirtualServer Address is specified in the Kubernetes resource and ipamLabel parameter is specified, CIS will leverage the IPAM Controller for allocation of IP address.
 
+- While using IPAM controller with default provider, regardless of storage option used, IPAM controller expects a file named `cis_ipam.sqlite3` to be mounted to `/app` directory with read & write permission for ctrl (UID 1200) user. To achieve this, example deployment uses InitContainer.
 
 ### Known Issues
 

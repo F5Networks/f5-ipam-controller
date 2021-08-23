@@ -19,7 +19,6 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
-
 	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -29,12 +28,14 @@ type DBStore struct {
 }
 
 const (
-	ALLOCATED = 0
-	AVAILABLE = 1
+	ALLOCATED  = 0
+	AVAILABLE  = 1
+	dbFileName = "/app/cis_ipam.sqlite3"
 )
 
 func NewStore() *DBStore {
-	db, err := sql.Open("sqlite3", "file::memory:?cache=shared")
+	dsn := "file:" + dbFileName + "?cache=shared&mode=rw"
+	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
 		log.Errorf("[STORE] Unable to Initialise DB, %v", err)
 		return nil
@@ -55,7 +56,7 @@ func NewStore() *DBStore {
 }
 
 func (store *DBStore) CreateTables() bool {
-	createIPAddressTableSQL := `CREATE TABLE ipaddress_range (
+	createIPAddressTableSQL := `CREATE TABLE IF NOT EXISTS ipaddress_range (
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 		"ipaddress" TEXT,
 		"status" INT,
@@ -66,10 +67,10 @@ func (store *DBStore) CreateTables() bool {
 
 	_, err := statement.Exec()
 	if err != nil {
-		log.Errorf("[STORE] Unable to Create Table 'ipaddress_range' in Database")
+		log.Errorf("[STORE] Unable to Create Table 'ipaddress_range' in Database. Error %v", err)
 		return false
 	}
-	createARecodsTableSQL := `CREATE TABLE a_records (
+	createARecodsTableSQL := `CREATE TABLE IF NOT EXISTS a_records (
 		"ipaddress" TEXT PRIMARY_KEY,
 		"hostname" TEXT	
 	  );`
@@ -78,7 +79,7 @@ func (store *DBStore) CreateTables() bool {
 
 	_, err = statement.Exec()
 	if err != nil {
-		log.Errorf("[STORE] Unable to Create  Table 'a_records' in Database")
+		log.Errorf("[STORE] Unable to Create Table 'a_records' in Database: %v", err)
 		return false
 	}
 	return true
@@ -92,7 +93,7 @@ func (store *DBStore) InsertIP(ips []string, ipamLabel string) {
 
 		_, err := statement.Exec(ip, AVAILABLE, ipamLabel)
 		if err != nil {
-			log.Error("[STORE] Unable to Insert row in Table 'ipaddress_range'")
+			log.Errorf("[STORE] Unable to Insert row in Table 'ipaddress_range': %v", err)
 		}
 	}
 }
@@ -212,7 +213,7 @@ func (store *DBStore) CreateARecord(hostname, ipAddr string) bool {
 
 	_, err := statement.Exec(ipAddr, hostname)
 	if err != nil {
-		log.Error("[STORE] Unable to Insert row in Table 'a_records'")
+		log.Errorf("[STORE] Unable to Insert row in Table 'a_records': %v", err)
 		return false
 	}
 	return true
@@ -225,7 +226,7 @@ func (store *DBStore) DeleteARecord(hostname, ipAddr string) bool {
 
 	_, err := statement.Exec(ipAddr, hostname)
 	if err != nil {
-		log.Error("[STORE] Unable to Delete row from Table 'a_records'")
+		log.Errorf("[STORE] Unable to Delete row from Table 'a_records': %v", err)
 		return false
 	}
 	return true
