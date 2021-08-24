@@ -55,7 +55,28 @@ func (prov *IPAMProvider) Init(params Params) bool {
 		return false
 	}
 
+	labelMap := prov.store.GetLabelMap()
+
+	for ipamLabel := range labelMap {
+		if _, ok := ipRangeMap[ipamLabel]; !ok {
+			// Remove all those labels from that are not present in the new ipRangeMap
+			prov.store.CleanUpLabel(ipamLabel)
+		}
+	}
+
 	for ipamLabel, ipRange := range ipRangeMap {
+
+		// If the label exists in store, validate range and take corresponding action
+		// if it doesn't exist in store, it is new label, create records by skipping "if" block
+		if rng, ok := labelMap[ipamLabel]; ok {
+			if rng == ipRange {
+				// Exists and same range, nothing to do, simply skip to next
+				continue
+			}
+			// Exists and range changed, so remove range and add new range
+			prov.store.CleanUpLabel(ipamLabel)
+		}
+
 		ipRangeConfig := strings.Split(ipRange, "-")
 		if len(ipRangeConfig) != 2 {
 			return false
@@ -80,6 +101,7 @@ func (prov *IPAMProvider) Init(params Params) bool {
 			return false
 		}
 		prov.ipamLabels[ipamLabel] = true
+		prov.store.AddLabel(ipamLabel, ipRange)
 		prov.store.InsertIP(ips, ipamLabel)
 	}
 	prov.store.DisplayIPRecords()
