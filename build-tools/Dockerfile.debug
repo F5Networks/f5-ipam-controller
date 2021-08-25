@@ -18,11 +18,11 @@ RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -ldflags "-extldflags \"-s
 # licensee dependencies
 RUN apt-get update && apt-get install -y ruby bundler cmake pkg-config git libssl-dev libpng-dev && gem install licensee
 
-RUN GO111MODULE=off && go get github.com/wadey/gocovmerge && \
+RUN go get github.com/wadey/gocovmerge && \
 	go get golang.org/x/tools/cmd/cover && \
 	go get github.com/mattn/goveralls && \
-	go get github.com/onsi/ginkgo/ginkgo && \
-	go get github.com/onsi/gomega && \
+	go get github.com/onsi/ginkgo/ginkgo@v1.16.2 && \
+	go get github.com/onsi/gomega@v1.12.0 && \
 	/bin/bash -ex $REPOPATH/build-tools/rel-build.sh
 
 FROM python:3.6-slim-buster
