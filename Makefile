@@ -75,7 +75,7 @@ prod-build-quick: pre-build
 
 debug: pre-build
 	@echo "Building with debug support..."
-	docker build --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.debug .
+	docker build  --build-arg RUN_TESTS=0 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.debug .
 
 dev-license: pre-build
 	@echo "Running with tests and licenses generated will be in all_attributions.txt..."
