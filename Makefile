@@ -14,9 +14,6 @@ GO_BUILD_FLAGS=-v -ldflags "-extldflags \"-static\" -X main.version=$(BUILD_VERS
 # Allow users to pass in BASE_OS build options (debian or rhel)
 BASE_OS ?= debian
 
-# This is for generating licences for vendor packages. Set the environment variable to true to generate the all_attributions.txt
-LICENSE ?= false
-
 all: local-build
 
 test: local-go-test
@@ -68,21 +65,26 @@ pre-build:
 prod-build: pre-build
 	@echo "Building with minimal instrumentation..."
 
-	docker build --build-arg LICENSE=1 --build-arg RUN_TESTS=1 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.$(BASE_OS) .
+	docker build --build-arg RUN_TESTS=1 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.$(BASE_OS) .
 
 prod-quick: prod-build-quick
 
 prod-build-quick: pre-build
 	@echo "Building without running tests..."
-	docker build --build-arg LICENSE=0 --build-arg RUN_TESTS=0 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.$(BASE_OS) .
+	docker build --build-arg RUN_TESTS=0 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.$(BASE_OS) .
 
 debug: pre-build
 	@echo "Building with debug support..."
 	docker build --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.debug .
 
-dev-licences: pre-build
-	@echo "Building without running tests..."
-	docker build --build-arg LICENSE=1 --build-arg RUN_TESTS=0 --build-arg BUILD_VERSION=$(BUILD_VERSION) --build-arg BUILD_INFO=$(BUILD_INFO) -t f5-ipam-controller:latest -f build-tools/Dockerfile.$(BASE_OS) .
+dev-license: pre-build
+	@echo "Running with tests and licenses generated will be in all_attributions.txt..."
+	docker build -t fic-attributions:latest -f build-tools/Dockerfile.attribution .
+
+	$(eval id := $(shell docker create fic-attributions:latest))
+	docker cp $(id):/opt/all_attributions.txt ./
+	docker rm -v $(id)
+	docker rmi -f fic-attributions:latest
 
 fmt:
 	@echo "Enforcing code formatting using 'go fmt'..."
