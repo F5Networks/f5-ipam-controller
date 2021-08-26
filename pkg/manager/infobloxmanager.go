@@ -129,7 +129,7 @@ func ParseLabels(params string) (map[string]IBParam, error) {
 
 // CreateARecord Creates an A record
 func (infMgr *InfobloxManager) CreateARecord(req ipamspec.IPAMRequest) bool {
-	if req.IPAddr == "" || req.HostName == "" {
+	if req.IPAddr == "" || (req.HostName == "" && req.Key == "") {
 		log.Errorf("[IPMG] Invalid Request to Create A Record: %v", req.String())
 		return false
 	}
@@ -173,7 +173,7 @@ func (infMgr *InfobloxManager) DeleteARecord(req ipamspec.IPAMRequest) {
 
 // GetIPAddress Gets IP Address associated with hostname
 func (infMgr *InfobloxManager) GetIPAddress(req ipamspec.IPAMRequest) string {
-	if req.HostName == "" {
+	if req.HostName == "" && req.Key == "" {
 		log.Errorf("[IPMG] Invalid Request to Get IP Address: %+v", req)
 		return ""
 	}
@@ -192,13 +192,9 @@ func (infMgr *InfobloxManager) GetIPAddress(req ipamspec.IPAMRequest) string {
 	if ok := infMgr.getIBParams(&req); !ok {
 		return ""
 	}
-	res := infMgr.getARecords(req)
+	ip := infMgr.getIPAddresses(req)
 
-	if len(res) == 0 {
-		return ""
-	}
-
-	return res[0].Ipv4Addr
+	return ip
 }
 
 // GetNextIPAddress Gets and reserves the next available IP address
@@ -206,7 +202,11 @@ func (infMgr *InfobloxManager) AllocateNextIPAddress(req ipamspec.IPAMRequest) s
 	if ok := infMgr.getIBParams(&req); !ok {
 		return ""
 	}
-	fixedAddr, err := infMgr.objMgr.AllocateIP(infMgr.NetView, req.CIDR, "", "", "", infMgr.ea)
+	name := req.HostName
+	if req.Key != "" {
+		name = req.Key
+	}
+	fixedAddr, err := infMgr.objMgr.AllocateIP(infMgr.NetView, req.CIDR, "", "", name, infMgr.ea)
 	if err != nil {
 		log.Errorf("[IPMG] Unable to Get a New IP Address: %+v", req)
 		return ""
@@ -244,6 +244,37 @@ func (infMgr *InfobloxManager) getARecords(req ipamspec.IPAMRequest) []ibxclient
 		return nil
 	}
 	return res
+}
+
+func (infMgr *InfobloxManager) getIPAddresses(req ipamspec.IPAMRequest) (ip string) {
+	var returnFixedAddresses []ibxclient.FixedAddress
+
+	if ok := infMgr.getIBParams(&req); !ok {
+		return ""
+	}
+
+	name := req.HostName
+	if req.Key != "" {
+		name = req.Key
+	}
+
+	fixedAddr := ibxclient.NewFixedAddress(ibxclient.FixedAddress{
+		NetviewName: infMgr.NetView,
+		Cidr:        req.CIDR,
+	})
+
+	err := infMgr.connector.GetObject(fixedAddr, "", &returnFixedAddresses)
+	for _, fixedAddress := range returnFixedAddresses {
+		if fixedAddress.Name == name {
+			return fixedAddress.IPAddress
+		}
+	}
+
+	if err != nil || returnFixedAddresses == nil || len(returnFixedAddresses) == 0 {
+		log.Errorf("[Infoblox] IP not available, %+v", req)
+		return ""
+	}
+	return ""
 }
 
 func (infMgr *InfobloxManager) validateIPAMLabels(dnsView, cidr string) (bool, error) {
