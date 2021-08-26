@@ -3,13 +3,15 @@ FROM golang:1.15 as builder
 ARG REPOPATH=$GOPATH/src/github.com/F5Networks/f5-ipam-controller
 ARG BUILD_VERSION
 ARG BUILD_INFO
+ARG RUN_TESTS
 
 WORKDIR $REPOPATH
-COPY go.mod go.sum ./
+
 ENV GO111MODULE on
-RUN go mod download && go get github.com/go-delve/delve/cmd/dlv
 COPY . .
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -ldflags "-extldflags \"-static\" -X main.version=${BUILD_VERSION} -X main.buildInfo=${BUILD_INFO}" -o /bin/f5-ipam-controller $REPOPATH/cmd/f5-ipam-controller
+
+RUN $REPOPATH/build-tools/rel-build.sh && \
+    go get github.com/go-delve/delve/cmd/dlv
 
 
 FROM python:3.6-slim-buster
