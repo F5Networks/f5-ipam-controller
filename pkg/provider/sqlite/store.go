@@ -55,24 +55,47 @@ func NewStore() *DBStore {
 	return store
 }
 
+func (store *DBStore) executeStatement(stmt string, params ...interface{}) error {
+	statement, err := store.db.Prepare(stmt)
+	if err != nil {
+		return err
+	}
+	_, err = statement.Exec(params...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (store *DBStore) CreateTables() bool {
+	// Create `label_map` table
+	err := store.executeStatement(
+		`CREATE TABLE IF NOT EXISTS label_map (
+		"ipam_label" TEXT PRIMARY_KEY,
+		"range" TEXT	
+	  );`,
+	)
+	if err != nil {
+		log.Errorf("[STORE] Unable to Create  Table 'label_map' in Database")
+		return false
+	}
+
 	createIPAddressTableSQL := `CREATE TABLE IF NOT EXISTS ipaddress_range (
-		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-		"ipaddress" TEXT,
+		"ipaddress" TEXT PRIMARY KEY,
 		"status" INT,
 		"ipam_label" TEXT
 	  );`
 
 	statement, _ := store.db.Prepare(createIPAddressTableSQL)
 
-	_, err := statement.Exec()
+	_, err = statement.Exec()
 	if err != nil {
 		log.Errorf("[STORE] Unable to Create Table 'ipaddress_range' in Database. Error %v", err)
 		return false
 	}
 	createARecodsTableSQL := `CREATE TABLE IF NOT EXISTS a_records (
 		"ipaddress" TEXT PRIMARY_KEY,
-		"hostname" TEXT	
+		"hostname" TEXT
 	  );`
 
 	statement, _ = store.db.Prepare(createARecodsTableSQL)
@@ -100,75 +123,47 @@ func (store *DBStore) InsertIP(ips []string, ipamLabel string) {
 
 func (store *DBStore) DisplayIPRecords() {
 
-	row, err := store.db.Query("SELECT * FROM ipaddress_range ORDER BY id")
+	row, err := store.db.Query("SELECT * FROM ipaddress_range")
 	if err != nil {
-		log.Debugf(" ", err)
+		log.Debugf("%v ", err)
 	}
 	columns, err := row.Columns()
 	if err != nil {
-		log.Debugf(" err : ", err)
+		log.Debugf(" err : %v", err)
 	}
 	log.Debugf("[STORE] %v", columns)
 	defer row.Close()
 	for row.Next() {
-		var id int
 		var ipaddress string
 		var status int
 		var ipamLabel string
-		row.Scan(&id, &ipaddress, &status, &ipamLabel)
-		log.Debugf("[STORE]  %v\t %v %v %v", id, ipaddress, status, ipamLabel)
+		row.Scan(&ipaddress, &status, &ipamLabel)
+		log.Debugf("[STORE] %v %v %v", ipaddress, status, ipamLabel)
 	}
 }
 
 func (store *DBStore) AllocateIP(ipamLabel string) string {
 	var ipaddress string
-	var id int
 
 	queryString := fmt.Sprintf(
-		"SELECT ipaddress,id FROM ipaddress_range where status=%d AND ipam_label=\"%s\" order by id ASC limit 1",
+		"SELECT ipaddress FROM ipaddress_range where status=%d AND ipam_label=\"%s\" order by ipaddress ASC limit 1",
 		AVAILABLE,
 		ipamLabel,
 	)
-	err := store.db.QueryRow(queryString).Scan(&ipaddress, &id)
+	err := store.db.QueryRow(queryString).Scan(&ipaddress)
 	if err != nil {
 		log.Infof("[STORE] No Available IP Addresses to Allocate: %v", err)
 		return ""
 	}
 
-	allocateIPSql := fmt.Sprintf("UPDATE ipaddress_range set status = %d where id = ?", ALLOCATED)
+	allocateIPSql := fmt.Sprintf("UPDATE ipaddress_range set status = %d WHERE ipaddress = ?", ALLOCATED)
 	statement, _ := store.db.Prepare(allocateIPSql)
 
-	_, err = statement.Exec(id)
+	_, err = statement.Exec(ipaddress)
 	if err != nil {
 		log.Errorf("[STORE] Unable to update row in Table 'ipaddress_range': %v", err)
 	}
 	return ipaddress
-}
-
-func (store *DBStore) MarkIPAsAllocated(ipamLabel, ipAddr string) bool {
-	var id int
-
-	queryString := fmt.Sprintf(
-		"SELECT id FROM ipaddress_range where status=%d AND ipam_label=\"%s\" AND ipaddress=\"%s\" order by id ASC limit 1",
-		AVAILABLE,
-		ipamLabel,
-		ipAddr,
-	)
-	err := store.db.QueryRow(queryString).Scan(&id)
-	if err != nil {
-		log.Infof("[STORE] No Available IP Addresses to Allocate: %v", err)
-		return false
-	}
-
-	allocateIPSql := fmt.Sprintf("UPDATE ipaddress_range set status = %d where id = ?", ALLOCATED)
-	statement, _ := store.db.Prepare(allocateIPSql)
-
-	_, err = statement.Exec(id)
-	if err != nil {
-		log.Errorf("[STORE] Unable to update row in Table 'ipaddress_range': %v", err)
-		return false
-	}
-	return true
 }
 
 func (store *DBStore) GetIPAddress(ipamLabel, hostname string) string {
@@ -184,7 +179,7 @@ func (store *DBStore) GetIPAddress(ipamLabel, hostname string) string {
 		return ""
 	}
 
-	queryString = fmt.Sprintf("SELECT status FROM ipaddress_range where ipaddress=\"%s\" AND ipam_label=\"%s\" order by id ASC limit 1",
+	queryString = fmt.Sprintf("SELECT status FROM ipaddress_range where ipaddress=\"%s\" AND ipam_label=\"%s\" ASC limit 1",
 		ipaddress,
 		ipamLabel,
 	)
@@ -230,4 +225,77 @@ func (store *DBStore) DeleteARecord(hostname, ipAddr string) bool {
 		return false
 	}
 	return true
+}
+
+func (store *DBStore) GetLabelMap() map[string]string {
+	row, err := store.db.Query("SELECT * FROM label_map")
+	if err != nil {
+		log.Debugf("%v ", err)
+	}
+	rangeMap := make(map[string]string)
+	defer row.Close()
+	for row.Next() {
+		var ipamLabel string
+		var ipamRange string
+		row.Scan(&ipamLabel, &ipamRange)
+		rangeMap[ipamLabel] = ipamRange
+	}
+
+	return rangeMap
+}
+
+func (store *DBStore) AddLabel(label, ipRange string) bool {
+	err := store.executeStatement(
+		`INSERT INTO label_map(ipam_label, range) VALUES (?, ?)`,
+		label,
+		ipRange,
+	)
+	if err != nil {
+		fmt.Printf("[STORE] Unable to Insert row in Table 'ipaddress_range': %v", err)
+		return false
+	}
+	return true
+}
+
+func (store *DBStore) RemoveLabel(label string) bool {
+	err := store.executeStatement(
+		"DELETE FROM label_map WHERE ipam_label=?",
+		label,
+	)
+	if err != nil {
+		log.Errorf("[STORE] Unable to Delete label: %v: %v", label, err)
+		return false
+	}
+	return true
+}
+
+// CleanUpLabel performs DELETE CASCADE of associated rows in all tables
+// TODO: Should be replaced by standard DB cascade deletion
+func (store *DBStore) CleanUpLabel(label string) {
+	row, err := store.db.Query(fmt.Sprintf("SELECT * FROM ipaddress_range WHERE ipam_label = \"%s\"", label))
+	if err != nil {
+		log.Debugf("%v", err)
+	}
+
+	defer row.Close()
+	for row.Next() {
+		var ipAddr string
+		var status int
+		var ipamLabel string
+		err = row.Scan(&ipAddr, &status, &ipamLabel)
+		if err != nil {
+			continue
+		}
+		_ = store.executeStatement(
+			"DELETE FROM a_records WHERE ipaddress=?",
+			ipAddr,
+		)
+	}
+
+	_ = store.executeStatement(
+		"DELETE FROM ipaddress_range WHERE ipam_label=?",
+		label,
+	)
+
+	_ = store.RemoveLabel(label)
 }
