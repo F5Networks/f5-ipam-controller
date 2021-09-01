@@ -221,6 +221,37 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 
 	switch rKey.Operation {
 	case CREATE:
+		// Handle stale Status entries
+		newSpecSet := make(specMap)
+
+		for _, hostSpec := range rKey.rsc.Spec.HostSpecs {
+			newSpecSet[*hostSpec] = true
+		}
+
+		for _, ipSpec := range rKey.rsc.Status.IPStatus {
+			hostSpec := ficV1.HostSpec{
+				Host:      ipSpec.Host,
+				CIDR:      ipSpec.CIDR,
+				IPAMLabel: ipSpec.IPAMLabel,
+				Key:       ipSpec.Key,
+			}
+			// Delete that status which doesn't have associated spec
+			if _, ok := newSpecSet[hostSpec]; !ok {
+				ipamReq := ipamspec.IPAMRequest{
+					Metadata: ResourceMeta{
+						name:      rKey.rsc.Name,
+						namespace: rKey.rsc.Namespace,
+					},
+					HostName:  hostSpec.Host,
+					CIDR:      hostSpec.CIDR,
+					IPAMLabel: hostSpec.IPAMLabel,
+					Key:       hostSpec.Key,
+					Operation: ipamspec.DELETE,
+				}
+				k8sc.reqChan <- ipamReq
+			}
+		}
+
 		for _, hostSpec := range rKey.rsc.Spec.HostSpecs {
 			ipamReq := ipamspec.IPAMRequest{
 				Metadata: ResourceMeta{

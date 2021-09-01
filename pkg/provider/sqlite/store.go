@@ -72,7 +72,7 @@ func (store *DBStore) CreateTables() bool {
 	err := store.executeStatement(
 		`CREATE TABLE IF NOT EXISTS label_map (
 		"ipam_label" TEXT PRIMARY_KEY,
-		"range" TEXT	
+		"range" TEXT
 	  );`,
 	)
 	if err != nil {
