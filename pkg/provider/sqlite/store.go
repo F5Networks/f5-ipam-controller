@@ -33,7 +33,22 @@ const (
 	dbFileName = "/app/cis_ipam.sqlite3"
 )
 
-func NewStore() *DBStore {
+type StoreProvider interface {
+	CreateTables() bool
+	InsertIP(ips []string, ipamLabel string)
+	DisplayIPRecords()
+	AllocateIP(ipamLabel string) string
+	GetIPAddress(ipamLabel, hostname string) string
+	ReleaseIP(ip string)
+	CreateARecord(hostname, ipAddr string) bool
+	DeleteARecord(hostname, ipAddr string) bool
+	GetLabelMap() map[string]string
+	AddLabel(label, ipRange string) bool
+	RemoveLabel(label string) bool
+	CleanUpLabel(label string)
+}
+
+func NewStore() StoreProvider {
 	dsn := "file:" + dbFileName + "?cache=shared&mode=rw"
 	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
