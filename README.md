@@ -91,7 +91,15 @@ metadata:
   namespace: kube-system
 ```
 
-#### Example: F5 IPAM Controller Deployment YAML with Default Provider
+Kubernetes supports a wide variety of storage options. Refer [link](https://kubernetes.io/docs/concepts/storage/volumes) for more details.
+
+###### _Note:_ Below example is just for demo purpose and is not suitable for production environment. Read through the limitations with each of the storage options and choose as per your production need. Please refer [cloudodcs](https://clouddocs.f5.com/containers/latest/userguide/ipam/) for more details.
+
+###### _Note:_  Local storage ties your application to a specific node as mentioned in nodeAffinity of PV yaml deployment.
+
+_Pre-requisite:_ Ensure mount directory (In below example, /tmp/cis_ipam) to be present on node.
+
+#### Example: F5 IPAM Controller Deployment YAML with Default Provider and localstorage PV mount using _securityContext_
 
 ```
 apiVersion: apps/v1
@@ -113,69 +121,71 @@ spec:
     spec:
       containers:
       - args:
-        - --orchestration=kubernetes
-        - --ip-range={"Dev":"172.16.3.21-172.16.3.30","Test":"172.  16.3.31-172.16.3.40", "Production":"172.16.3.41-172.16.3.50","Default":"172.16.3.51-172.16.3.60"}'
-        - --log-level=DEBUG
+        - --orchestration
+        - kubernetes
+        - --ip-range
+        - '{"Dev":"172.16.3.21-172.16.3.30","Test":"172.16.3.31-172.16.3.40","Production":"172.16.3.41-172.16.3.50",
+          "Default":"172.16.3.51-172.16.3.60" } '
+        - --log-level
+        - DEBUG
         command:
         - /app/bin/f5-ipam-controller
-        image: f5networks/f5-ipam-controller
+        image: f5networks/f5-ipam-controller:latest
         imagePullPolicy: IfNotPresent
         name: f5-ipam-controller
+        terminationMessagePath: /dev/termination-log
         volumeMounts:
-        - mountPath: /app/cis_ipam.sqlite3
+        - mountPath: /app/ipamdb
           name: samplevol
-      initContainers:
-      - command:
-        - chown
-        - 1200:1200
-        - /app/cis_ipam.sqlite3
-        image: busybox
-        imagePullPolicy: IfNotPresent
-        name: f5-ipam-controller-init
-        volumeMounts:
-        - mountPath: /app/cis_ipam.sqlite3
-          name: samplevol
-      serviceAccount: ipam-ctlr
-      serviceAccountName: ipam-ctlr
+      securityContext:
+        fsGroup: 1200
+        runAsGroup: 1200
+        runAsUser: 1200
+      serviceAccount: bigip-controller
+      serviceAccountName: bigip-controller
       volumes:
       - name: samplevol
         persistentVolumeClaim:
-          claimName: sample-pvc
+          claimName: pvc-local
 ```
 
-#### Example: Persistent Volume using HostPath for IPAM controller deployment with default provider
+#### Example: Persistent Volume using localstorage for IPAM controller deployment with default provider
 ```
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: sample-pv
-  labels:
-    type: local
+  name: local-pv
 spec:
-  storageClassName: manual
   capacity:
     storage: 1Gi
+  volumeMode: Filesystem
   accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: "/tmp/cis_ipam.sqlite3"
-    type: FileOrCreate
+  - ReadWriteOnce
+  storageClassName: local-storage
+  local:
+    path: /tmp/cis_ipam
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - <node-name>
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: sample-pvc
+  name: pvc-local
   namespace: kube-system
 spec:
-  storageClassName: manual
+  storageClassName: local-storage
   accessModes:
   - ReadWriteOnce
   resources:
     requests:
       storage: 0.1Gi
 ```
-
-Kubernetes supports a wide variety of storage options. Refer [link](https://kubernetes.io/docs/concepts/storage/volumes) for more details.
 
 #### Example: F5 IPAM Controller Deployment YAML with Infoblox Provider
 
@@ -331,7 +341,9 @@ spec:
 
 - If No VirtualServer Address is specified in the Kubernetes resource and ipamLabel parameter is specified, CIS will leverage the IPAM Controller for allocation of IP address.
 
-- While using IPAM controller with default provider, regardless of storage option used, IPAM controller expects a file named `cis_ipam.sqlite3` to be mounted to `/app` directory with read & write permission for ctrl (UID 1200) user. To achieve this, example deployment uses InitContainer.
+- While using IPAM controller with default provider, 
+    - Regardless of storage option used, IPAM controller expects read and write permission for IPAM controller user (UID 1200) to mounted directory volume. To achieve this, localstorage PV example deployment uses _securityContext_.
+    - Be aware of limitations with each of storage options before choosing one for your production environment.
 
 ### Known Issues
 
