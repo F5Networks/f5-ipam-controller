@@ -26,7 +26,7 @@ import (
 )
 
 type IPAMProvider struct {
-	store      *sqlite.DBStore
+	store      sqlite.StoreProvider
 	ipamLabels map[string]bool
 }
 
@@ -42,6 +42,7 @@ func NewProvider(params Params) *IPAMProvider {
 		ipamLabels: make(map[string]bool),
 	}
 	if !prov.Init(params) {
+		log.Fatal("[PROV] Invalid IP range provided")
 		return nil
 	}
 	return prov
@@ -51,7 +52,7 @@ func (prov *IPAMProvider) Init(params Params) bool {
 	ipRangeMap := make(map[string]string)
 	err := json.Unmarshal([]byte(params.Range), &ipRangeMap)
 	if err != nil {
-		log.Fatal("[PROV] Invalid IP range provided")
+		log.Error("[PROV] Invalid IP range provided")
 		return false
 	}
 
@@ -97,9 +98,6 @@ func (prov *IPAMProvider) Init(params Params) bool {
 			ips = append(ips, startIP.String())
 		}
 		ips = append(ips, endIP.String())
-		if len(ips) == 0 {
-			return false
-		}
 		prov.ipamLabels[ipamLabel] = true
 		prov.store.AddLabel(ipamLabel, ipRange)
 		prov.store.InsertIP(ips, ipamLabel)
