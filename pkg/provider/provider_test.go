@@ -1,7 +1,7 @@
 package provider
 
 import (
-	"github.com/F5Networks/f5-ipam-controller/pkg/provider/mock"
+	"github.com/F5Networks/f5-ipam-controller/pkg/provider/sqlite/mock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"testing"
@@ -17,7 +17,7 @@ func ipRangeHelper(iprange string, result bool) (prov *IPAMProvider) {
 		Range: iprange,
 	}
 	prov = &IPAMProvider{
-		store:      mock.MockNewStore(mock.MockData{}),
+		store:      mock.NewMockStore(mock.MockData{}),
 		ipamLabels: make(map[string]bool),
 	}
 	if result {
@@ -52,7 +52,7 @@ var _ = Describe("Static IP Provider", func() {
 		ipamMap["dev"] = "192.168.1.10-192.168.1.15"
 		ipamMap["test"] = "192.168.1.1-192.168.1.5"
 		ipamMap["prod"] = "172.16.1.50-172.16.1.55"
-		store := mock.MockNewStore(mock.MockData{IPAMLabelMap: ipamMap})
+		store := mock.NewMockStore(mock.MockData{IPAMLabelMap: ipamMap})
 		prov := &IPAMProvider{
 			store:      store,
 			ipamLabels: make(map[string]bool),
@@ -61,7 +61,7 @@ var _ = Describe("Static IP Provider", func() {
 		Expect(store.Data.CleanUpFlag).To(BeTrue())
 	})
 	It("Test store functions", func() {
-		store := mock.MockNewStore(mock.MockData{
+		store := mock.NewMockStore(mock.MockData{
 			IPAMLabelMap: make(map[string]string),
 			CleanUpFlag:  false,
 			Hostdata:     make(map[string]string),
@@ -81,20 +81,20 @@ var _ = Describe("Static IP Provider", func() {
 		prov.DeleteARecord("foo.com", "10.1.1.1")
 		_, ok = store.Data.Hostdata["foo.com"]
 		Expect(ok).To(BeFalse())
-		prov.AllocateNextIPAddress("dev")
+		prov.AllocateNextIPAddress("dev", "foo.com")
 		ip, status := store.Data.LabelData["dev"]
 		Expect(status).To(BeTrue())
 		// Get the ipaddress from valid label
-		Expect(prov.GetIPAddress("dev", "")).To(Equal(store.Data.LabelData["dev"]))
+		Expect(prov.GetIPAddressFromReference("dev", "foo.com")).To(Equal(store.Data.LabelData["dev"]))
 		// Releasing the ip address
 		prov.ReleaseAddr(ip)
 		_, ok = store.Data.LabelData["dev"]
 		Expect(ok).To(BeFalse())
 		// Allocate ip address from invalid label
-		prov.AllocateNextIPAddress("invalid")
+		prov.AllocateNextIPAddress("invalid", "invalid")
 		_, ok = store.Data.LabelData["invalid"]
 		Expect(ok).To(BeFalse())
 		// get the ipaddress from invalid label
-		Expect(prov.GetIPAddress("invalid", "")).To(Equal(""))
+		Expect(prov.GetIPAddressFromReference("invalid", "")).To(Equal(""))
 	})
 })

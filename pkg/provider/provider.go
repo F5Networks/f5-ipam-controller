@@ -104,7 +104,7 @@ func (prov *IPAMProvider) Init(params Params) bool {
 		log.Debugf("Added Label: %v", ipamLabel)
 
 		prov.store.AddLabel(ipamLabel, ipRange)
-		prov.store.InsertIP(ips, ipamLabel)
+		prov.store.InsertIPs(ips, ipamLabel)
 	}
 	prov.store.DisplayIPRecords()
 
@@ -133,21 +133,29 @@ func (prov *IPAMProvider) DeleteARecord(hostname, ipAddr string) {
 	log.Debugf("[PROV] Deleted 'A' Record. Host:%v, IP:%v", hostname, ipAddr)
 }
 
-func (prov *IPAMProvider) GetIPAddress(ipamLabel, hostname string) string {
+func (prov *IPAMProvider) GetIPAddressFromARecord(ipamLabel, hostname string) string {
 	if _, ok := prov.ipamLabels[ipamLabel]; !ok {
 		log.Debugf("[PROV] IPAM LABEL: %v Not Found", ipamLabel)
 		return ""
 	}
-	return prov.store.GetIPAddress(ipamLabel, hostname)
+	return prov.store.GetIPAddressFromARecord(ipamLabel, hostname)
+}
+
+func (prov *IPAMProvider) GetIPAddressFromReference(ipamLabel, reference string) string {
+	if _, ok := prov.ipamLabels[ipamLabel]; !ok {
+		log.Debugf("[PROV] IPAM LABEL: %v Not Found", ipamLabel)
+		return ""
+	}
+	return prov.store.GetIPAddressFromReference(ipamLabel, reference)
 }
 
 // Gets and reserves the next available IP address
-func (prov *IPAMProvider) AllocateNextIPAddress(ipamLabel string) string {
+func (prov *IPAMProvider) AllocateNextIPAddress(ipamLabel, reference string) string {
 	if _, ok := prov.ipamLabels[ipamLabel]; !ok {
 		log.Debugf("[PROV] Unsupported IPAM LABEL: %v", ipamLabel)
 		return ""
 	}
-	return prov.store.AllocateIP(ipamLabel)
+	return prov.store.AllocateIP(ipamLabel, reference)
 }
 
 // Releases an IP address
