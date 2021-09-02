@@ -42,9 +42,10 @@ func NewProvider(params Params) *IPAMProvider {
 		ipamLabels: make(map[string]bool),
 	}
 	if !prov.Init(params) {
-		log.Fatal("[PROV] Invalid IP range provided")
+		log.Fatal("[PROV] Failed to Initialize Provider")
 		return nil
 	}
+	log.Debugf("[PROV] Provider Initialised")
 	return prov
 }
 
@@ -72,6 +73,7 @@ func (prov *IPAMProvider) Init(params Params) bool {
 		if rng, ok := labelMap[ipamLabel]; ok {
 			if rng == ipRange {
 				// Exists and same range, nothing to do, simply skip to next
+				prov.ipamLabels[ipamLabel] = true
 				continue
 			}
 			// Exists and range changed, so remove range and add new range
@@ -99,6 +101,8 @@ func (prov *IPAMProvider) Init(params Params) bool {
 		}
 		ips = append(ips, endIP.String())
 		prov.ipamLabels[ipamLabel] = true
+		log.Debugf("Added Label: %v", ipamLabel)
+
 		prov.store.AddLabel(ipamLabel, ipRange)
 		prov.store.InsertIP(ips, ipamLabel)
 	}
