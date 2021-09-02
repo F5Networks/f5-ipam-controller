@@ -36,7 +36,7 @@ Build-Image:
         export LICENSE_STRICT=false
       fi
     - export CLEAN_BUILD=true
-    - make prod-quick
+    - make prod
     - echo "export BUILD_IMG_TAG=$BUILD_IMG_TAG;" >> shared-vars.sh
     - |
       if [ "$DOCKER_READY" ]; then

@@ -27,13 +27,13 @@ if [ -z $BUILD_INFO ]; then
 fi
 
 ginkgo_test_with_coverage () {
-    ginkgo -r -compilers 1 -keepGoing -trace -randomizeAllSpecs -progress --nodes 4 -cover
+    ginkgo -r -compilers 1 -keepGoing -trace -progress -cover
     echo "Gathering unit test code coverage for 'release' build..."
     gather_coverage $WKDIR
 }
 
 ginkgo_test_with_profile () {
-    ginkgo -r -compilers 1 -keepGoing -randomizeAllSpecs -progress --nodes 4 \
+    ginkgo -r -compilers 1 -keepGoing -trace -progress \
             ${BUILD_VARIANT_FLAGS} -- \
             -test.cpuprofile profile.cpu \
             -test.blockprofile profile.block \
