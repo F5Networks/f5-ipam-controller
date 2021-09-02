@@ -138,15 +138,16 @@ func (infMgr *InfobloxManager) CreateARecord(req ipamspec.IPAMRequest) bool {
 		return false
 	}
 
-	if ok := infMgr.getIBParams(&req); !ok {
+	label, ok := infMgr.IBLabels[req.IPAMLabel]
+	if !ok {
 		return false
 	}
 
 	_, err := infMgr.objMgr.CreateARecord(
 		infMgr.NetView,
-		req.DNSView,
+		label.DNSView,
 		req.HostName,
-		req.CIDR,
+		label.CIDR,
 		req.IPAddr,
 		infMgr.ea,
 	)
@@ -160,9 +161,6 @@ func (infMgr *InfobloxManager) CreateARecord(req ipamspec.IPAMRequest) bool {
 
 // DeleteARecord Deletes an A record and releases the IP address
 func (infMgr *InfobloxManager) DeleteARecord(req ipamspec.IPAMRequest) {
-	if ok := infMgr.getIBParams(&req); !ok {
-		return
-	}
 	res := infMgr.getARecords(req)
 
 	_, err := infMgr.objMgr.DeleteARecord(res[0].Ref)
@@ -189,9 +187,6 @@ func (infMgr *InfobloxManager) GetIPAddress(req ipamspec.IPAMRequest) string {
 	//	log.Errorf("[IPMG] No IP address available with Hostname to Get IP Address: %v", req.String())
 	//	return ""
 	//}
-	if ok := infMgr.getIBParams(&req); !ok {
-		return ""
-	}
 	res := infMgr.getARecords(req)
 
 	if len(res) == 0 {
@@ -203,10 +198,11 @@ func (infMgr *InfobloxManager) GetIPAddress(req ipamspec.IPAMRequest) string {
 
 // GetNextIPAddress Gets and reserves the next available IP address
 func (infMgr *InfobloxManager) AllocateNextIPAddress(req ipamspec.IPAMRequest) string {
-	if ok := infMgr.getIBParams(&req); !ok {
+	label, ok := infMgr.IBLabels[req.IPAMLabel]
+	if !ok {
 		return ""
 	}
-	fixedAddr, err := infMgr.objMgr.AllocateIP(infMgr.NetView, req.CIDR, "", "", "", infMgr.ea)
+	fixedAddr, err := infMgr.objMgr.AllocateIP(infMgr.NetView, label.CIDR, "", "", "", infMgr.ea)
 	if err != nil {
 		log.Errorf("[IPMG] Unable to Get a New IP Address: %+v", req)
 		return ""
@@ -216,10 +212,11 @@ func (infMgr *InfobloxManager) AllocateNextIPAddress(req ipamspec.IPAMRequest) s
 
 // ReleaseIPAddress Releases an IP address
 func (infMgr *InfobloxManager) ReleaseIPAddress(req ipamspec.IPAMRequest) {
-	if ok := infMgr.getIBParams(&req); !ok {
+	label, ok := infMgr.IBLabels[req.IPAMLabel]
+	if !ok {
 		return
 	}
-	_, err := infMgr.objMgr.ReleaseIP(infMgr.NetView, req.CIDR, req.IPAddr, "")
+	_, err := infMgr.objMgr.ReleaseIP(infMgr.NetView, label.CIDR, req.IPAddr, "")
 	if err != nil {
 		log.Errorf("[IPMG] Unable to Release IP Address: %+v", req)
 	}
@@ -229,13 +226,14 @@ func (infMgr *InfobloxManager) ReleaseIPAddress(req ipamspec.IPAMRequest) {
 func (infMgr *InfobloxManager) getARecords(req ipamspec.IPAMRequest) []ibxclient.RecordA {
 	var res []ibxclient.RecordA
 
-	if ok := infMgr.getIBParams(&req); !ok {
+	label, ok := infMgr.IBLabels[req.IPAMLabel]
+	if !ok {
 		return nil
 	}
 
 	recA := ibxclient.NewRecordA(ibxclient.RecordA{
 		Name: req.HostName,
-		View: req.DNSView,
+		View: label.DNSView,
 	})
 
 	err := infMgr.connector.GetObject(recA, "", &res)
@@ -255,15 +253,4 @@ func (infMgr *InfobloxManager) validateIPAMLabels(dnsView, cidr string) (bool, e
 		return false, err
 	}
 	return true, nil
-}
-
-func (infMgr *InfobloxManager) getIBParams(req *ipamspec.IPAMRequest) bool {
-	label, ok := infMgr.IBLabels[req.IPAMLabel]
-	if !ok {
-		log.Errorf("[IPMG] Invalid Label: %v provided.", req.IPAMLabel)
-		return false
-	}
-	req.DNSView = label.DNSView
-	req.CIDR = label.CIDR
-	return true
 }

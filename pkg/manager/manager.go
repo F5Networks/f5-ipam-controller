@@ -28,7 +28,7 @@ type Manager interface {
 	CreateARecord(req ipamspec.IPAMRequest) bool
 	// Deletes an A record and releases the IP address
 	DeleteARecord(req ipamspec.IPAMRequest)
-	// Gets IP Address associated with hostname
+	// Gets IP Address associated with hostname/key
 	GetIPAddress(req ipamspec.IPAMRequest) string
 	// Gets and reserves the next available IP address
 	AllocateNextIPAddress(req ipamspec.IPAMRequest) string

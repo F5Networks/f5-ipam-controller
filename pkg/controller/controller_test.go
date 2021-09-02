@@ -34,13 +34,13 @@ var _ = Describe("Static IP Provider", func() {
 		Expect(mockorch.StartCalled).To(BeTrue())
 	})
 	It("should process the ip request", func() {
-		ctlr.reqChan <- ipamspec.IPAMRequest{Metadata: "", Operation: ipamspec.CREATE, HostName: "foo.com", IPAddr: "", Key: "", IPAMLabel: "Dev", CIDR: "", DNSView: ""}
+		ctlr.reqChan <- ipamspec.IPAMRequest{Metadata: "", Operation: ipamspec.CREATE, HostName: "foo.com", IPAddr: "", Key: "", IPAMLabel: "Dev"}
 		tmp := <-ctlr.respChan
 		Expect(tmp.IPAddr).To(Equal("1.2.3.4"), "Should get an ip addresse.")
-		ctlr.reqChan <- ipamspec.IPAMRequest{Metadata: "", Operation: ipamspec.DELETE, HostName: "foo.com", IPAddr: "1.2.3.4", Key: "", IPAMLabel: "Dev", CIDR: "", DNSView: ""}
+		ctlr.reqChan <- ipamspec.IPAMRequest{Metadata: "", Operation: ipamspec.DELETE, HostName: "foo.com", IPAddr: "1.2.3.4", Key: "", IPAMLabel: "Dev"}
 		tmp2 := <-ctlr.respChan
 		Expect(tmp2.IPAddr).To(Equal(""), "Should remove the ip addresse.")
-		ctlr.reqChan <- ipamspec.IPAMRequest{Metadata: "", Operation: ipamspec.CREATE, HostName: "", IPAddr: "", Key: "Test", IPAMLabel: "Dev", CIDR: "", DNSView: ""}
+		ctlr.reqChan <- ipamspec.IPAMRequest{Metadata: "", Operation: ipamspec.CREATE, HostName: "", IPAddr: "", Key: "Test", IPAMLabel: "Dev"}
 		tmp3 := <-ctlr.respChan
 		Expect(tmp3.IPAddr).To(Equal("1.2.3.4"), "Should get previous ip address only")
 		// Fail A record Creation

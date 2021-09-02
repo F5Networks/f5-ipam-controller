@@ -30,8 +30,6 @@ type IPAMRequest struct {
 	IPAddr    string
 	Key       string
 	IPAMLabel string
-	CIDR      string
-	DNSView   string
 }
 
 type IPAMResponse struct {
@@ -42,10 +40,9 @@ type IPAMResponse struct {
 
 func (ipmReq IPAMRequest) String() string {
 	return fmt.Sprintf(
-		"\nHostname: %v\tKey: %v\tCIDR: %v\tIPAMLabel: %v\tIPAddr: %v\tOperation: %v\n",
+		"\nHostname: %v\tKey: %v\tIPAMLabel: %v\tIPAddr: %v\tOperation: %v\n",
 		ipmReq.HostName,
 		ipmReq.Key,
-		ipmReq.CIDR,
 		ipmReq.IPAMLabel,
 		ipmReq.IPAddr,
 		ipmReq.Operation,
