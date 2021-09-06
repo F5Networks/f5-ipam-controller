@@ -231,7 +231,6 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 		for _, ipSpec := range rKey.rsc.Status.IPStatus {
 			hostSpec := ficV1.HostSpec{
 				Host:      ipSpec.Host,
-				CIDR:      ipSpec.CIDR,
 				IPAMLabel: ipSpec.IPAMLabel,
 				Key:       ipSpec.Key,
 			}
@@ -243,7 +242,6 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 						namespace: rKey.rsc.Namespace,
 					},
 					HostName:  hostSpec.Host,
-					CIDR:      hostSpec.CIDR,
 					IPAMLabel: hostSpec.IPAMLabel,
 					Key:       hostSpec.Key,
 					Operation: ipamspec.DELETE,
@@ -259,7 +257,6 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 					namespace: rKey.rsc.Namespace,
 				},
 				HostName:  hostSpec.Host,
-				CIDR:      hostSpec.CIDR,
 				IPAMLabel: hostSpec.IPAMLabel,
 				Key:       hostSpec.Key,
 				Operation: ipamspec.CREATE,
@@ -292,7 +289,6 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 					namespace: rKey.rsc.Namespace,
 				},
 				HostName:  ipStatus.Host,
-				CIDR:      ipStatus.CIDR,
 				IPAMLabel: ipStatus.IPAMLabel,
 				Key:       ipStatus.Key,
 				IPAddr:    ipStatus.IP,
@@ -319,7 +315,6 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 						namespace: rKey.rsc.Namespace,
 					},
 					HostName:  spec.Host,
-					CIDR:      spec.CIDR,
 					IPAMLabel: spec.IPAMLabel,
 					Key:       spec.Key,
 					Operation: ipamspec.DELETE,
@@ -336,7 +331,6 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 						namespace: rKey.rsc.Namespace,
 					},
 					HostName:  spec.Host,
-					CIDR:      spec.CIDR,
 					IPAMLabel: spec.IPAMLabel,
 					Key:       spec.Key,
 					Operation: ipamspec.CREATE,
@@ -367,8 +361,7 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 				for _, ipSpec := range ipamRsc.Status.IPStatus {
 					if ((resp.Request.HostName != "" && ipSpec.Host == resp.Request.HostName) ||
 						(resp.Request.Key != "" && ipSpec.Key == resp.Request.Key)) &&
-						((resp.Request.CIDR != "" && ipSpec.CIDR == resp.Request.CIDR) ||
-							(resp.Request.IPAMLabel != "" && ipSpec.IPAMLabel == resp.Request.IPAMLabel)) {
+						(resp.Request.IPAMLabel != "" && ipSpec.IPAMLabel == resp.Request.IPAMLabel) {
 
 						ipSpec.IP = resp.IPAddr
 						found = true
@@ -378,7 +371,6 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 					ipSpec := &ficV1.IPSpec{
 						Host:      resp.Request.HostName,
 						Key:       resp.Request.Key,
-						CIDR:      resp.Request.CIDR,
 						IPAMLabel: resp.Request.IPAMLabel,
 						IP:        resp.IPAddr,
 					}
@@ -417,8 +409,7 @@ func (k8sc *K8sIPAMClient) processResponse() bool {
 				for i, ipSpec := range ipamRsc.Status.IPStatus {
 					if ((resp.Request.HostName != "" && ipSpec.Host == resp.Request.HostName) ||
 						(resp.Request.Key != "" && ipSpec.Key == resp.Request.Key)) &&
-						((resp.Request.CIDR != "" && ipSpec.CIDR == resp.Request.CIDR) ||
-							(resp.Request.IPAMLabel != "" && ipSpec.IPAMLabel == resp.Request.IPAMLabel)) {
+						(resp.Request.IPAMLabel != "" && ipSpec.IPAMLabel == resp.Request.IPAMLabel) {
 
 						index = i
 					}
