@@ -85,7 +85,8 @@ func (ctlr *Controller) runController() {
 			if ipAddr != "" {
 				req.IPAddr = ipAddr
 				ctlr.Manager.ReleaseIPAddress(req)
-				ctlr.Manager.DeleteARecord(req)
+				// Disabled DNSView (ARecords)
+				//ctlr.Manager.DeleteARecord(req)
 			}
 			go func(request ipamspec.IPAMRequest) {
 				resp := ipamspec.IPAMResponse{
