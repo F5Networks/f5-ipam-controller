@@ -18,8 +18,6 @@ package manager
 
 import (
 	"encoding/json"
-	"fmt"
-
 	"github.com/F5Networks/f5-ipam-controller/pkg/ipamspec"
 	"github.com/F5Networks/f5-ipam-controller/pkg/utils"
 	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
@@ -46,11 +44,11 @@ type InfobloxManager struct {
 	objMgr    *ibxclient.ObjectManager
 	ea        ibxclient.EA
 	NetView   string
-	IBLabels  map[string]IBParam
+	IBLabels  map[string]IBConfig
 }
 
-type IBParam struct {
-	DNSView string `json:"dnsView"`
+type IBConfig struct {
+	DNSView string `json:"dnsView,omitempty"`
 	CIDR    string `json:"cidr"`
 }
 
@@ -61,6 +59,11 @@ func NewInfobloxManager(params InfobloxParams) (*InfobloxManager, error) {
 		Port:     params.Port,
 		Username: params.Username,
 		Password: params.Password,
+	}
+
+	labels, err := ParseLabels(params.IbLabelMap)
+	if err != nil {
+		return nil, err
 	}
 
 	// TransportConfig params: sslVerify, httpRequestsTimeout, httpPoolConnections
@@ -89,11 +92,6 @@ func NewInfobloxManager(params InfobloxParams) (*InfobloxManager, error) {
 		}
 	}
 
-	labels, err := ParseLabels(params.IbLabelMap)
-	if err != nil {
-		return nil, err
-	}
-
 	ibMgr := &InfobloxManager{
 		connector: connector,
 		objMgr:    objMgr,
@@ -115,13 +113,17 @@ func NewInfobloxManager(params InfobloxParams) (*InfobloxManager, error) {
 	return ibMgr, nil
 }
 
-func ParseLabels(params string) (map[string]IBParam, error) {
-	ibLabelMap := make(map[string]IBParam)
+func ParseLabels(params string) (map[string]IBConfig, error) {
+	ibLabelMap := make(map[string]IBConfig)
 	err := json.Unmarshal([]byte(params), &ibLabelMap)
 	if err != nil {
 		return nil, err
 	}
 	for label, ibParam := range ibLabelMap {
+		// DNSView is being disabled
+		// The below line can be removed when DNSView support is enabled
+		ibParam.DNSView = ""
+
 		ibLabelMap[label] = ibParam
 	}
 	return ibLabelMap, nil
@@ -278,9 +280,12 @@ func (infMgr *InfobloxManager) getIPAddressFromName(req ipamspec.IPAMRequest) (i
 }
 
 func (infMgr *InfobloxManager) validateIPAMLabels(dnsView, cidr string) (bool, error) {
-	if len(dnsView) == 0 {
-		return false, fmt.Errorf("dnsView should not be empty")
-	}
+
+	// DNSView is being disabled
+	// The below code can be uncommented when DNSView support is enabled
+	//if len(dnsView) == 0 {
+	//	return false, fmt.Errorf("dnsView should not be empty")
+	//}
 	_, err := infMgr.objMgr.GetNetwork(infMgr.NetView, cidr, infMgr.ea)
 	if err != nil {
 		return false, err
