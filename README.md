@@ -45,7 +45,7 @@ The F5 IPAM Controller acts as an interface to CIS to provide an IP address from
 
 | PARAMETER | TYPE | REQUIRED | DESCRIPTION |
 | ------ | ------ | ------ | ------ |
-| infoblox-labels | String | Required | infoblox labels holds the mappings for infoblox's netView, dnsView and CIDR |
+| infoblox-labels | String | Required | infoblox labels holds the mappings for infoblox's CIDR |
 | infoblox-grid-host | String | Required |  URL (or IP Address) of Infoblox Grid Host |
 | infoblox-wapi-port | String | Required | Port that the Infoblox Server listens on |
 | infoblox-wapi-version | String | Required | Web API version of Infoblox
@@ -204,7 +204,7 @@ spec:
         - --ipam-provider
         - infoblox
         - --infoblox-labels
-        - '{"Dev" :{"dnsView": "default", "cidr": "172.16.4.0/24"},"Test" :{"dnsView": "test", "cidr": "172.16.5.0/24"}}'
+        - '{"Dev" :{"cidr": "172.16.4.0/24"},"Test" :{"cidr": "172.16.5.0/24"}}'
         - --infoblox-grid-host
         - 10.144.75.2
         - --infoblox-wapi-port=443

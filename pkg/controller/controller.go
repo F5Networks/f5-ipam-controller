@@ -68,6 +68,7 @@ func (ctlr *Controller) runController() {
 			ipAddr = ctlr.Manager.AllocateNextIPAddress(req)
 			if ipAddr != "" {
 				log.Debugf("[CORE] Allocated IP: %v for Request: %v", ipAddr, req.String())
+				// A Record Support is disabled
 				//req.IPAddr = ipAddr
 				//ok := ctlr.Manager.CreateARecord(req)
 				//if !ok {
@@ -85,7 +86,7 @@ func (ctlr *Controller) runController() {
 			if ipAddr != "" {
 				req.IPAddr = ipAddr
 				ctlr.Manager.ReleaseIPAddress(req)
-				// Disabled DNSView (ARecords)
+				// A Record Support is disabled
 				//ctlr.Manager.DeleteARecord(req)
 			}
 			go func(request ipamspec.IPAMRequest) {
