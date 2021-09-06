@@ -85,17 +85,24 @@ func (ipMgr *IPAMManager) GetIPAddress(req ipamspec.IPAMRequest) string {
 		return ""
 	}
 
-	if req.Key != "" {
-		return ipMgr.provider.GetIPAddress(req.IPAMLabel, req.Key)
+	ref := req.HostName
+
+	if ref == "" {
+		ref = req.Key
 	}
-	// TODO: Validate hostname to be a proper dns hostname
-	return ipMgr.provider.GetIPAddress(req.IPAMLabel, req.HostName)
+
+	return ipMgr.provider.GetIPAddressFromReference(req.IPAMLabel, ref)
+
 }
 
 // Gets and reserves the next available IP address
 func (ipMgr *IPAMManager) AllocateNextIPAddress(req ipamspec.IPAMRequest) string {
+	ref := req.HostName
 
-	return ipMgr.provider.AllocateNextIPAddress(req.IPAMLabel)
+	if ref == "" {
+		ref = req.Key
+	}
+	return ipMgr.provider.AllocateNextIPAddress(req.IPAMLabel, ref)
 }
 
 // Releases an IP address
