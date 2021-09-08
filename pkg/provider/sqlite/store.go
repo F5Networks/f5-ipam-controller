@@ -21,6 +21,7 @@ import (
 	"fmt"
 	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
 	_ "github.com/mattn/go-sqlite3"
+	"os"
 )
 
 type DBStore struct {
@@ -28,9 +29,10 @@ type DBStore struct {
 }
 
 const (
-	ALLOCATED  = 0
-	AVAILABLE  = 1
-	dbFileName = "/app/cis_ipam.sqlite3"
+	ALLOCATED = 0
+	AVAILABLE = 1
+
+	dbFileName = "/app/ipamdb/cis_ipam.sqlite3"
 
 	ReferenceLength = 16
 )
@@ -54,7 +56,31 @@ type StoreProvider interface {
 	CleanUpLabel(label string)
 }
 
+func fileExists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			log.Debugf("[STORE] Creating IPAM DB file in mount path")
+			file, err := os.OpenFile(name, os.O_CREATE, 0660)
+			if err != nil {
+				log.Errorf("[STORE] Unable to create IPAM DB file: %v", err)
+			}
+			defer file.Close()
+			return err == nil
+		} else if os.IsPermission(err) {
+			log.Errorf("[STORE] Unable to read IPAM DB file due to permission issue: %v", err)
+		} else {
+			log.Errorf("[STORE] Unable to verify IPAM DB file: %v", err)
+		}
+		return false
+	}
+	log.Debugf("[STORE] Using IPAM DB file from mount path")
+	return true
+}
+
 func NewStore() StoreProvider {
+	if !fileExists(dbFileName) {
+		return nil
+	}
 	dsn := "file:" + dbFileName + "?cache=shared&mode=rw"
 	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
@@ -157,7 +183,7 @@ func (store *DBStore) DisplayIPRecords() {
 		var ipamLabel string
 		var ref string
 		row.Scan(&ipaddress, &status, &ipamLabel, &ref)
-		log.Debugf("[STORE] %v %v %v", ipaddress, status, ipamLabel, &ref)
+		log.Debugf("[STORE] %v %v %v %v", ipaddress, status, ipamLabel, ref)
 	}
 }
 

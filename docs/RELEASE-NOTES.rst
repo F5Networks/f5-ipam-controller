@@ -1,6 +1,25 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
 
+Next-release
+------------
+Added Functionality
+```````````````````
+* Persistent volume mount support with F5 IPAM Controller default provider. (More details at `documentation <https://github.com/F5Networks/f5-ipam-controller/blob/main/README.md>`_).
+* Added support for
+    - Single NetView via deployment parameters. It need not be provided via IPAM Label.
+    - Standalone IP in Infoblox Provider.
+* `f5ipam` CRD is now renamed to `ipam`.
+* Disabled DNSView for Infoblox Provider
+
+Bug Fixes
+`````````
+* Stale status entries are cleared from IPAM custom resource.
+
+Known Issues
+```````````
+
+
 0.1.4
 ------------
 Added Functionality
