@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/signal"
-	"strconv"
 	"strings"
 	"syscall"
 
@@ -44,12 +44,13 @@ var (
 	// Infoblox
 	ibHost       *string
 	ibVersion    *string
-	ibPort       *int
+	ibPort       *string
 	ibUsername   *string
 	ibPassword   *string
 	ibLabelMap   *string
 	printVersion *bool
 	ibNetView    *string
+	credsDir     *string
 )
 
 func init() {
@@ -87,7 +88,7 @@ func init() {
 		"Required for infoblox, the grid manager host IP.")
 	ibVersion = ibFlags.String("infoblox-wapi-version", "",
 		"Required for infoblox, the Web API version.")
-	ibPort = ibFlags.Int("infoblox-wapi-port", 443,
+	ibPort = ibFlags.String("infoblox-wapi-port", "443",
 		"Optional for infoblox, the Web API port.")
 	ibUsername = ibFlags.String("infoblox-username", "",
 		"Required for infoblox, the login username.")
@@ -97,6 +98,9 @@ func init() {
 		"Required for mapping the infoblox's dnsview and cidr to IPAM labels")
 	ibNetView = ibFlags.String("infoblox-netview", "",
 		"Required for allocation of IP addresses")
+	credsDir = ibFlags.String("credentials-directory", "",
+		"Optional, directory that contains the Infoblox username, password and/or wapi-port, grid-host "+
+			"files. To be used instead of username, password, and/or wapi-port, grid-host arguments.")
 
 	globalFlags.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "  Global:\n%s\n", globalFlags.FlagUsagesWrapped(width))
@@ -146,17 +150,66 @@ func verifyArgs() error {
 	*iprange = strings.Trim(*iprange, "'")
 
 	if *provider == manager.InfobloxProvider {
-		if len(*ibHost) == 0 || len(*ibVersion) == 0 {
-			return fmt.Errorf("missing required Infoblox parameter")
-		} else if len(*ibUsername) == 0 || len(*ibPassword) == 0 {
-			return fmt.Errorf("missing Infoblox credentials")
-		} else if len(*ibLabelMap) == 0 {
-			return fmt.Errorf("missing Infoblox Labels")
-		} else if len(*ibNetView) == 0 {
-			return fmt.Errorf("missing Infoblox NetView")
+		if len(*credsDir) == 0 {
+			if len(*ibHost) == 0 || len(*ibVersion) == 0 {
+				return fmt.Errorf("missing required Infoblox parameter")
+			} else if len(*ibUsername) == 0 || len(*ibPassword) == 0 {
+				return fmt.Errorf("missing Infoblox credentials")
+			} else if len(*ibLabelMap) == 0 {
+				return fmt.Errorf("missing Infoblox Labels")
+			} else if len(*ibNetView) == 0 {
+				return fmt.Errorf("missing Infoblox NetView")
+			}
 		}
 	}
 
+	return nil
+}
+
+func getCredentials() error {
+	// Get infoblox credentials
+	if len(*credsDir) > 0 {
+		var username, password, infobloxURL, port, appendSlash string
+		var err error
+
+		if !strings.HasSuffix(*credsDir, "/") {
+			appendSlash = "/"
+		}
+		username = *credsDir + appendSlash + "username"
+		password = *credsDir + appendSlash + "password"
+		infobloxURL = *credsDir + appendSlash + "grid-host"
+		port = *credsDir + appendSlash + "wapi-port"
+
+		setField := func(field *string, filename, fieldType string) error {
+			fileBytes, readErr := ioutil.ReadFile(filename)
+			if readErr != nil {
+				log.Debugf("No %s in credentials directory, falling back to CLI argument", fieldType)
+				if len(*field) == 0 {
+					return fmt.Errorf("Infoblox %s not specified", fieldType)
+				}
+			} else {
+				*field = strings.TrimSpace(string(fileBytes))
+			}
+			return nil
+		}
+
+		err = setField(ibUsername, username, "username")
+		if err != nil {
+			return err
+		}
+		err = setField(ibPassword, password, "password")
+		if err != nil {
+			return err
+		}
+		err = setField(ibHost, infobloxURL, "grid-host")
+		if err != nil {
+			return err
+		}
+		err = setField(ibPort, port, "wapi-port")
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -171,6 +224,12 @@ func main() {
 		os.Exit(0)
 	}
 	err = verifyArgs()
+	if nil != err {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		flags.Usage()
+		os.Exit(1)
+	}
+	err = getCredentials()
 	if nil != err {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		flags.Usage()
@@ -193,7 +252,7 @@ func main() {
 		mgrParams.InfobloxParams = manager.InfobloxParams{
 			Host:       *ibHost,
 			Version:    *ibVersion,
-			Port:       strconv.Itoa(*ibPort),
+			Port:       *ibPort,
 			Username:   *ibUsername,
 			Password:   *ibPassword,
 			IbLabelMap: *ibLabelMap,

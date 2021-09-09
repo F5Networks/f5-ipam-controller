@@ -47,11 +47,12 @@ The F5 IPAM Controller acts as an interface to CIS to provide an IP address from
 | ------ | ------ | ------ | ------ |
 | infoblox-labels | String | Required | infoblox labels holds the mappings for infoblox's CIDR |
 | infoblox-grid-host | String | Required |  URL (or IP Address) of Infoblox Grid Host |
-| infoblox-wapi-port | String | Required | Port that the Infoblox Server listens on |
+| infoblox-wapi-port | String | Optional | Port that the Infoblox Server listens on. Default is 443 |
 | infoblox-wapi-version | String | Required | Web API version of Infoblox
 | infoblox-username | String | Required | Username of Infoblox User |
-| infoblox-username | String | Required | Password of the given Infoblox User |
+| infoblox-password | String | Required | Password of the given Infoblox User |
 | infoblox-netview | String | Required | Netview from which IP addresses needs to be allocated |
+| credentials-directory | String | Optional | Credentials can be mounted from k8s secrets |
 
 
 Note: On how to configure these Configuration Options, please refer to IPAM Deployment YAML example in below.
