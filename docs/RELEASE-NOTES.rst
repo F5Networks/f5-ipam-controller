@@ -9,6 +9,7 @@ Added Functionality
 * Added support for
     - Single NetView via deployment parameters. It need not be provided via IPAM Label.
     - Standalone IP in Infoblox Provider.
+    - `credentials-directory` configuration option for mounting infoblox credentials from kubernetes secrets
 * `f5ipam` CRD is now renamed to `ipam`.
 * Disabled DNSView for Infoblox Provider
 

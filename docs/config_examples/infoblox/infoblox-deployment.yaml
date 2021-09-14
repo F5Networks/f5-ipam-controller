@@ -1,0 +1,44 @@
+# Sample configuration for f5-ipam-controller with infoblox provider. Infoblox credentials are passed directly in arguments
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: f5-ipam-controller
+  name: f5-ipam-controller
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: f5-ipam-controller
+  template:
+    metadata:
+      labels:
+        app: f5-ipam-controller
+    spec:
+      containers:
+        - args:
+            - --orchestration=kubernetes
+            - --log-level=DEBUG
+            - --ipam-provider
+            - infoblox
+            - --infoblox-labels
+            - '{"Dev" :{"cidr": "172.16.4.0/24"},"Test" :{"cidr": "172.16.5.0/24"}}'
+            - --infoblox-grid-host
+            - 10.1.1.1
+            - --infoblox-wapi-port=443
+            - --infoblox-wapi-version
+            - 2.11.2
+            - --infoblox-username
+            - user
+            - --infoblox-password
+            - paswd
+            - --infoblox-netview
+            - default
+          command:
+            - /app/bin/f5-ipam-controller
+          image: f5networks/f5-ipam-controller
+          imagePullPolicy: IfNotPresent
+          name: f5-ipam-controller
+      serviceAccount: ipam-ctlr
+      serviceAccountName: ipam-ctlr
