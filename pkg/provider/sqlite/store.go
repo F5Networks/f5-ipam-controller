@@ -19,9 +19,10 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"os"
+
 	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
 	_ "github.com/mattn/go-sqlite3"
-	"os"
 )
 
 type DBStore struct {
@@ -201,11 +202,10 @@ func (store *DBStore) AllocateIP(ipamLabel, reference string) string {
 		return ""
 	}
 
-	allocateIPSql := fmt.Sprintf("UPDATE ipaddress_range set status = %d and reference = %s WHERE ipaddress = ?",
+	allocateIPSql := fmt.Sprintf("UPDATE ipaddress_range set status = %d and reference = \"%s\" WHERE ipaddress = ?",
 		ALLOCATED,
 		reference,
 	)
-
 	err = store.executeStatement(allocateIPSql, ipaddress)
 	if err != nil {
 		log.Errorf("[STORE] Unable to update row in Table 'ipaddress_range': %v", err)
