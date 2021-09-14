@@ -42,15 +42,17 @@ var (
 	iprange *string
 
 	// Infoblox
-	ibHost       *string
-	ibVersion    *string
-	ibPort       *string
-	ibUsername   *string
-	ibPassword   *string
-	ibLabelMap   *string
-	printVersion *bool
-	ibNetView    *string
-	credsDir     *string
+	ibHost             *string
+	ibVersion          *string
+	ibPort             *string
+	ibUsername         *string
+	ibPassword         *string
+	ibLabelMap         *string
+	printVersion       *bool
+	ibNetView          *string
+	credsDir           *string
+	sslInsecure        *bool
+	trustedCertsCfgmap *string
 )
 
 func init() {
@@ -101,6 +103,10 @@ func init() {
 	credsDir = ibFlags.String("credentials-directory", "",
 		"Optional, directory that contains the Infoblox username, password and/or wapi-port, grid-host "+
 			"files. To be used instead of username, password, and/or wapi-port, grid-host arguments.")
+	sslInsecure = ibFlags.Bool("insecure", false,
+		"Optional, when set to true, enable insecure SSL communication to Infoblox.")
+	trustedCertsCfgmap = ibFlags.String("trusted-certs-cfgmap", "",
+		"Optional, when certificates are provided, adds them to controller'trusted certificate store.")
 
 	globalFlags.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "  Global:\n%s\n", globalFlags.FlagUsagesWrapped(width))
@@ -257,6 +263,12 @@ func main() {
 			Password:   *ibPassword,
 			IbLabelMap: *ibLabelMap,
 			NetView:    *ibNetView,
+		}
+		if !*sslInsecure {
+			// if orchestrator is kubernetes
+			k8sResParams := orchestration.K8SResourceParams{TrustedCertsCfgMap: *trustedCertsCfgmap}
+			k8sRes := orcr.ExportResourcesData(k8sResParams)
+			mgrParams.TrustedCerts = k8sRes.(orchestration.K8SResources).TrustedCerts
 		}
 	}
 	mgr, err := manager.NewManager(mgrParams)

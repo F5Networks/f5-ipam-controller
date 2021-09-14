@@ -54,13 +54,14 @@ func NewManager(params Params) (Manager, error) {
 	case InfobloxProvider:
 		log.Debugf("[MGR] Creating Manager with Provider: %v", InfobloxProvider)
 		ibxParams := InfobloxParams{
-			Host:       params.Host,
-			Version:    params.Version,
-			Port:       params.Port,
-			Username:   params.Username,
-			Password:   params.Password,
-			IbLabelMap: params.IbLabelMap,
-			NetView:    params.NetView,
+			Host:         params.Host,
+			Version:      params.Version,
+			Port:         params.Port,
+			Username:     params.Username,
+			Password:     params.Password,
+			IbLabelMap:   params.IbLabelMap,
+			NetView:      params.NetView,
+			TrustedCerts: params.TrustedCerts,
 		}
 		return NewInfobloxManager(ibxParams)
 	default:
