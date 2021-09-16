@@ -30,13 +30,14 @@ const (
 )
 
 type InfobloxParams struct {
-	Host       string
-	Version    string
-	Port       string
-	Username   string
-	Password   string
-	IbLabelMap string
-	NetView    string
+	Host         string
+	Version      string
+	Port         string
+	Username     string
+	Password     string
+	IbLabelMap   string
+	NetView      string
+	TrustedCerts string
 }
 
 type InfobloxManager struct {

@@ -18,6 +18,11 @@ func (moc *MockOrch) SetupCommunicationChannels(reqChan chan<- ipamspec.IPAMRequ
 		moc.RespChan = respChan
 	}
 }
+
+func (moc *MockOrch) ExportResourcesData(interface{}) interface{} {
+	return nil
+}
+
 func (moc *MockOrch) Stop() {
 	StopCalled = true
 }
