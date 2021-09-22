@@ -169,7 +169,7 @@ func (k8sc *K8sIPAMClient) SetupCommunicationChannels(
 //	return nil
 //}
 
-// Runs the Orchestrator, watching for resources
+// Start method runs the Orchestrator, watching for resources
 func (k8sc *K8sIPAMClient) Start(stopCh <-chan struct{}) {
 	k8sc.ipamCli.Start()
 	go wait.Until(k8sc.customResourceWorker, time.Second, stopCh)

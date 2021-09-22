@@ -43,7 +43,7 @@ func NewIPAMManager(params IPAMManagerParams) (*IPAMManager, error) {
 	return &IPAMManager{provider: prov}, nil
 }
 
-// Creates an A record
+// CreateARecord method creates an A record
 func (ipMgr *IPAMManager) CreateARecord(req ipamspec.IPAMRequest) bool {
 	if req.IPAddr == "" || (req.HostName == "" && req.Key == "") {
 		log.Errorf("[IPMG] Invalid Request to Create A Record: %v", req.String())
@@ -62,7 +62,7 @@ func (ipMgr *IPAMManager) CreateARecord(req ipamspec.IPAMRequest) bool {
 	return true
 }
 
-// Deletes an A record and releases the IP address
+// DeleteARecord method deletes an A record and releases the IP address
 func (ipMgr *IPAMManager) DeleteARecord(req ipamspec.IPAMRequest) {
 	if req.IPAddr == "" || (req.HostName == "" && req.Key == "") {
 		log.Errorf("[IPMG] Invalid Request to Delete A Record: %v", req.String())
@@ -81,7 +81,7 @@ func (ipMgr *IPAMManager) DeleteARecord(req ipamspec.IPAMRequest) {
 
 func (ipMgr *IPAMManager) GetIPAddress(req ipamspec.IPAMRequest) string {
 	if req.IPAMLabel == "" || (req.HostName == "" && req.Key == "") {
-		log.Errorf("[IPMG] Invalid Request to Get IP Address: %v", req.String())
+		log.Errorf("[IPMG] Invalid request to get IPAddress: %v", req.String())
 		return ""
 	}
 
@@ -95,7 +95,7 @@ func (ipMgr *IPAMManager) GetIPAddress(req ipamspec.IPAMRequest) string {
 
 }
 
-// Gets and reserves the next available IP address
+// AllocateNextIPAddress method gets and reserves the next available IP address
 func (ipMgr *IPAMManager) AllocateNextIPAddress(req ipamspec.IPAMRequest) string {
 	ref := req.HostName
 
@@ -105,7 +105,7 @@ func (ipMgr *IPAMManager) AllocateNextIPAddress(req ipamspec.IPAMRequest) string
 	return ipMgr.provider.AllocateNextIPAddress(req.IPAMLabel, ref)
 }
 
-// Releases an IP address
+// ReleaseIPAddress method releases an IP address
 func (ipMgr *IPAMManager) ReleaseIPAddress(req ipamspec.IPAMRequest) {
 	if !isIPV4Addr(req.IPAddr) {
 		log.Errorf("[IPMG] Unable to Release IP Address, as Invalid IP Address Provided")
