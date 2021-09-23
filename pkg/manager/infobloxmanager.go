@@ -175,7 +175,7 @@ func (infMgr *InfobloxManager) DeleteARecord(req ipamspec.IPAMRequest) {
 // GetIPAddress Gets IP Address associated with hostname
 func (infMgr *InfobloxManager) GetIPAddress(req ipamspec.IPAMRequest) string {
 	if req.HostName == "" && req.Key == "" {
-		log.Errorf("[IPMG] Invalid Request to Get IP Address: %+v", req)
+		log.Errorf("[IPMG] Invalid Request to get IPAddress: %+v", req)
 		return ""
 	}
 

@@ -202,7 +202,7 @@ func (store *DBStore) AllocateIP(ipamLabel, reference string) string {
 		return ""
 	}
 
-	allocateIPSql := fmt.Sprintf("UPDATE ipaddress_range set status = %d and reference = \"%s\" WHERE ipaddress = ?",
+	allocateIPSql := fmt.Sprintf("UPDATE ipaddress_range set status=%d, reference=\"%s\" WHERE ipaddress=?",
 		ALLOCATED,
 		reference,
 	)
@@ -226,12 +226,15 @@ func (store *DBStore) GetIPAddressFromARecord(ipamLabel, hostname string) string
 		return ""
 	}
 
-	queryString = fmt.Sprintf("SELECT status FROM ipaddress_range where ipaddress=\"%s\" AND ipam_label=\"%s\" ASC limit 1",
+	queryString = fmt.Sprintf("SELECT status FROM ipaddress_range where ipaddress=\"%s\" AND ipam_label=\"%s\" order by ipaddress ASC LIMIT 1",
 		ipaddress,
 		ipamLabel,
 	)
 	err = store.db.QueryRow(queryString).Scan(&status)
-	if err != nil || status == AVAILABLE {
+	if err != nil {
+		log.Errorf("Unable to fetch IPAddress from 'A' record %s with error %v", err)
+		return ""
+	} else if status == AVAILABLE {
 		return ""
 	}
 
@@ -242,12 +245,16 @@ func (store *DBStore) GetIPAddressFromReference(ipamLabel, reference string) str
 	var ipaddress string
 	var status int
 
-	queryString := fmt.Sprintf("SELECT ipaddress and status FROM ipaddress_range where reference=\"%s\" AND ipam_label=\"%s\" ASC limit 1",
+	queryString := fmt.Sprintf("SELECT ipaddress, status FROM ipaddress_range where reference=\"%s\" AND ipam_label=\"%s\" order by ipaddress ASC limit 1",
 		reference,
 		ipamLabel,
 	)
 	err := store.db.QueryRow(queryString).Scan(&ipaddress, &status)
-	if err != nil || status == AVAILABLE {
+	if err != nil {
+		log.Errorf("Unable to fetch IPAddress for reference %s with error %v", reference, err)
+		return ""
+	}
+	if status == AVAILABLE {
 		return ""
 	}
 
@@ -255,7 +262,7 @@ func (store *DBStore) GetIPAddressFromReference(ipamLabel, reference string) str
 }
 
 func (store *DBStore) ReleaseIP(ip string) {
-	deallocateIPSql := fmt.Sprintf("UPDATE ipaddress_range set status = %d and reference = %s where ipaddress = ?",
+	deallocateIPSql := fmt.Sprintf("UPDATE ipaddress_range set status=%d and reference=\"%s\" where ipaddress=?",
 		AVAILABLE,
 		randomString(ReferenceLength),
 	)

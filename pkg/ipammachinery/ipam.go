@@ -64,7 +64,7 @@ func NewIPAMClient(params Params) *IPAMClient {
 	}
 
 	if err := ipamCli.setupInformersWithEventHandlers(params.EventHandlers); err != nil {
-		log.Error("Failed to Setup Informers")
+		log.Errorf("Failed to Setup Informers %v", err)
 	}
 
 	log.Debugf("Created New IPAM Client")
