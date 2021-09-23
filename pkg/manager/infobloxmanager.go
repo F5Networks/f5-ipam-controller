@@ -30,14 +30,14 @@ const (
 )
 
 type InfobloxParams struct {
-	Host         string
-	Version      string
-	Port         string
-	Username     string
-	Password     string
-	IbLabelMap   string
-	NetView      string
-	TrustedCerts string
+	Host       string
+	Version    string
+	Port       string
+	Username   string
+	Password   string
+	IbLabelMap string
+	NetView    string
+	SslVerify  string
 }
 
 type InfobloxManager struct {
@@ -69,7 +69,7 @@ func NewInfobloxManager(params InfobloxParams) (*InfobloxManager, error) {
 
 	// TransportConfig params: sslVerify, httpRequestsTimeout, httpPoolConnections
 	// These are the common values
-	transportConfig := ibxclient.NewTransportConfig("false", 20, 10)
+	transportConfig := ibxclient.NewTransportConfig(params.SslVerify, 20, 10)
 	requestBuilder := &ibxclient.WapiRequestBuilder{}
 	requestor := &ibxclient.WapiHttpRequestor{}
 	connector, err := ibxclient.NewConnector(hostConfig, transportConfig, requestBuilder, requestor)
