@@ -262,7 +262,7 @@ func (store *DBStore) GetIPAddressFromReference(ipamLabel, reference string) str
 }
 
 func (store *DBStore) ReleaseIP(ip string) {
-	deallocateIPSql := fmt.Sprintf("UPDATE ipaddress_range set status=%d and reference=\"%s\" where ipaddress=?",
+	deallocateIPSql := fmt.Sprintf("UPDATE ipaddress_range set status=%d, reference=\"%s\" where ipaddress=?",
 		AVAILABLE,
 		randomString(ReferenceLength),
 	)
