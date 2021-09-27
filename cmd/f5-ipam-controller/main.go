@@ -42,17 +42,16 @@ var (
 	iprange *string
 
 	// Infoblox
-	ibHost             *string
-	ibVersion          *string
-	ibPort             *string
-	ibUsername         *string
-	ibPassword         *string
-	ibLabelMap         *string
-	printVersion       *bool
-	ibNetView          *string
-	credsDir           *string
-	sslInsecure        *bool
-	trustedCertsCfgmap *string
+	ibHost       *string
+	ibVersion    *string
+	ibPort       *string
+	ibUsername   *string
+	ibPassword   *string
+	ibLabelMap   *string
+	printVersion *bool
+	ibNetView    *string
+	credsDir     *string
+	sslInsecure  *bool
 )
 
 func init() {
@@ -105,9 +104,6 @@ func init() {
 			"files. To be used instead of username, password, and/or wapi-port, grid-host arguments.")
 	sslInsecure = ibFlags.Bool("insecure", false,
 		"Optional, when set to true, enable insecure SSL communication to Infoblox.")
-	trustedCertsCfgmap = ibFlags.String("trusted-certs-cfgmap", "",
-		"Optional, when certificates are provided, adds them to controller'trusted certificate store.")
-
 	globalFlags.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "  Global:\n%s\n", globalFlags.FlagUsagesWrapped(width))
 	}
@@ -266,9 +262,17 @@ func main() {
 		}
 		if !*sslInsecure {
 			// if orchestrator is kubernetes
-			k8sResParams := orchestration.K8SResourceParams{TrustedCertsCfgMap: *trustedCertsCfgmap}
-			k8sRes := orcr.ExportResourcesData(k8sResParams)
-			mgrParams.TrustedCerts = k8sRes.(orchestration.K8SResources).TrustedCerts
+			if len(*credsDir) > 0 {
+				var appendSlash string
+				if !strings.HasSuffix(*credsDir, "/") {
+					appendSlash = "/"
+				}
+				mgrParams.SslVerify = *credsDir + appendSlash + "certificate"
+			} else {
+				log.Infof("[INIT] Error in fetching cert for infoblox")
+			}
+		} else {
+			mgrParams.SslVerify = "false"
 		}
 	}
 	mgr, err := manager.NewManager(mgrParams)

@@ -17,10 +17,6 @@
 package orchestration
 
 import (
-	"context"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"strings"
 	"time"
 
 	ficV1 "github.com/F5Networks/f5-ipam-controller/pkg/ipamapis/apis/fic/v1"
@@ -40,8 +36,6 @@ import (
 
 type K8sIPAMClient struct {
 	ipamCli *ipammachinery.IPAMClient
-	kubeCli kubernetes.Interface
-
 	// Queue and informers for namespaces and resources
 	rscQueue workqueue.RateLimitingInterface
 
@@ -49,14 +43,6 @@ type K8sIPAMClient struct {
 	reqChan chan<- ipamspec.IPAMRequest
 	// Channel for receiving responce from controller
 	respChan <-chan ipamspec.IPAMResponse
-}
-
-type K8SResourceParams struct {
-	TrustedCertsCfgMap string
-}
-
-type K8SResources struct {
-	TrustedCerts string
 }
 
 const (
@@ -89,12 +75,6 @@ func NewIPAMK8SClient() *K8sIPAMClient {
 		return nil
 	}
 
-	kubeClient, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		log.Fatalf("[INIT] error connecting to the client: %v", err)
-		return nil
-	}
-
 	k8sIPAMClient := &K8sIPAMClient{
 		rscQueue: workqueue.NewNamedRateLimitingQueue(
 			workqueue.DefaultControllerRateLimiter(), "ipam-controller"),
@@ -118,7 +98,6 @@ func NewIPAMK8SClient() *K8sIPAMClient {
 		return nil
 	}
 	k8sIPAMClient.ipamCli = ipamCli
-	k8sIPAMClient.kubeCli = kubeClient
 	//k8sIPAMClient.registerIPAMCRD(config)
 	//k8sIPAMClient.createIPAMResource()
 	return k8sIPAMClient
@@ -180,34 +159,6 @@ func (k8sc *K8sIPAMClient) Start(stopCh <-chan struct{}) {
 
 func (k8sc *K8sIPAMClient) Stop() {
 	k8sc.ipamCli.Stop()
-}
-
-func (k8sc *K8sIPAMClient) ExportResourcesData(params interface{}) interface{} {
-	k8sResParams := params.(K8SResourceParams)
-	splits := strings.Split(k8sResParams.TrustedCertsCfgMap, "/")
-	if len(splits) != 2 {
-		log.Debugf("[INIT] Invalid trusted-certs-cfgmap option provided")
-		return K8SResources{
-			TrustedCerts: "",
-		}
-	}
-
-	cfgMap, err := k8sc.kubeCli.CoreV1().ConfigMaps(splits[0]).Get(context.TODO(), splits[1], metav1.GetOptions{})
-	if err != nil {
-		log.Debugf("[INIT] Error in fetching configmap data for trusted certs")
-		return K8SResources{
-			TrustedCerts: "",
-		}
-	}
-
-	var certs string
-	// Fetch all certificates from configmap
-	for _, v := range cfgMap.Data {
-		certs += v + "\n"
-	}
-	return K8SResources{
-		TrustedCerts: certs,
-	}
 }
 
 func (k8sc *K8sIPAMClient) enqueueIPAM(obj interface{}) {
