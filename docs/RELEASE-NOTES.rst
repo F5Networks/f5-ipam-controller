@@ -1,24 +1,40 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
+Next Release
+````````````
 
-Next-release
+Bug Fixes
+`````````
+
+0.1.5
 ------------
 Added Functionality
 ```````````````````
-* Persistent volume mount support with F5 IPAM Controller default provider. (More details at `documentation <https://github.com/F5Networks/f5-ipam-controller/blob/main/README.md>`_).
+* F5 IPAM Controller supports InfoBlox(See `documentation <https://github.com/F5Networks/f5-ipam-controller/blob/main/README.md>`_)
+* Persistent support added for F5 IPAM Controller default provider. So FIC now requires pvc with volume mounted in deployment for default provider(More details at `documentation <https://github.com/F5Networks/f5-ipam-controller/blob/main/README.md>`_).
 * Added support for
-    - Single NetView via deployment parameters. It need not be provided via IPAM Label.
+    - Single NetView via deployment parameter `infoblox-netview`. It need not be provided via IPAM Label(See `documentation <https://github.com/F5Networks/f5-ipam-controller/blob/main/docs/config_examples/infoblox/infoblox-deployment.yaml>`_).
     - Standalone IP in Infoblox Provider.
-    - `credentials-directory` configuration option for mounting infoblox credentials from kubernetes secrets
-* `f5ipam` CRD is now renamed to `ipam`.
-* Disabled DNSView for Infoblox Provider
+    - `credentials-directory` configuration option for mounting infoblox credentials and self-signed certificate from kubernetes secrets.
+* Disabled DNSView for Infoblox Provider(A - record support is deprecated)
 
 Bug Fixes
 `````````
 * Stale status entries are cleared from IPAM custom resource.
+* FIC restart allocates multiple IP addresses on InfoBlox
 
 Known Issues
 ```````````
+* With InfoBlox integration,
+    * Update ip-range is not working as expected
+
+Migration from 0.1.4
+````````````````````
+* `f5ipam` CRD is now renamed to `ipam`.
+* Resource in clusterrole should be updated to ipam before upgrading to latest ipam(See latest clusterrole at `documentation <https://github.com/F5Networks/k8s-bigip-ctlr/blob/master/docs/config_examples/crd/Install/clusterrole.yml>`_)
+* For F5 IPAM Controller default provider, update deployment with pvc and volume for persistance of DB.
+  Volume mount is prerequisite for FIC v0.1.5(See `documentation <https://github.com/F5Networks/f5-ipam-controller/blob/main/README.md>`_ for FIC deploment with volume)
+
 
 
 0.1.4
