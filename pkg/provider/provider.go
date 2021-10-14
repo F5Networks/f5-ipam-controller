@@ -42,7 +42,7 @@ func NewProvider(params Params) *IPAMProvider {
 		ipamLabels: make(map[string]bool),
 	}
 	if !prov.Init(params) {
-		log.Fatal("[PROV] Failed to Initialize Provider")
+		log.Error("[PROV] Failed to Initialize Provider")
 		return nil
 	}
 	log.Debugf("[PROV] Provider Initialised")
