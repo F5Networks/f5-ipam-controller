@@ -40,9 +40,17 @@ type InfobloxParams struct {
 	SslVerify  string
 }
 
+type ObjMgrHandler struct {
+	*ibxclient.ObjectManager
+}
+
+type ConnectorHandler struct {
+	*ibxclient.Connector
+}
+
 type InfobloxManager struct {
-	connector *ibxclient.Connector
-	objMgr    *ibxclient.ObjectManager
+	connector *ConnectorHandler
+	objMgr    *ObjMgrHandler
 	ea        ibxclient.EA
 	NetView   string
 	IBLabels  map[string]IBConfig
@@ -94,8 +102,8 @@ func NewInfobloxManager(params InfobloxParams) (*InfobloxManager, error) {
 	}
 
 	ibMgr := &InfobloxManager{
-		connector: connector,
-		objMgr:    objMgr,
+		connector: &ConnectorHandler{connector},
+		objMgr:    &ObjMgrHandler{objMgr},
 		ea:        ibxclient.EA{EAKey: EAVal},
 		IBLabels:  labels,
 		NetView:   params.NetView,
@@ -267,15 +275,16 @@ func (infMgr *InfobloxManager) getIPAddressFromName(req ipamspec.IPAMRequest) (i
 	})
 
 	err := infMgr.connector.GetObject(fixedAddr, "", &returnFixedAddresses)
-	for _, fixedAddress := range returnFixedAddresses {
-		if fixedAddress.Name == name {
-			return fixedAddress.IPAddress
-		}
-	}
 
 	if err != nil || returnFixedAddresses == nil || len(returnFixedAddresses) == 0 {
 		log.Errorf("[Infoblox] IP not available, %+v", req)
 		return ""
+	}
+
+	for _, fixedAddress := range returnFixedAddresses {
+		if fixedAddress.Name == name {
+			return fixedAddress.IPAddress
+		}
 	}
 	return ""
 }

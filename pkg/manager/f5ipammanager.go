@@ -30,8 +30,12 @@ type IPAMManagerParams struct {
 	Range string
 }
 
+type providerHandler struct {
+	*provider.IPAMProvider
+}
+
 type IPAMManager struct {
-	provider *provider.IPAMProvider
+	provider *providerHandler
 }
 
 func NewIPAMManager(params IPAMManagerParams) (*IPAMManager, error) {
@@ -40,7 +44,7 @@ func NewIPAMManager(params IPAMManagerParams) (*IPAMManager, error) {
 	if prov == nil {
 		return nil, fmt.Errorf("[IPMG] Unable to create Provider")
 	}
-	return &IPAMManager{provider: prov}, nil
+	return &IPAMManager{provider: &providerHandler{prov}}, nil
 }
 
 // CreateARecord method creates an A record

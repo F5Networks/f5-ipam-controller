@@ -19,6 +19,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"github.com/F5Networks/f5-ipam-controller/pkg/utils"
 	"os"
 
 	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
@@ -159,7 +160,7 @@ func (store *DBStore) InsertIPs(ips []string, ipamLabel string) {
 	for _, ip := range ips {
 		err := store.executeStatement(
 			`INSERT INTO ipaddress_range(ipaddress, status, ipam_label, reference) VALUES (?, ?, ?, ?)`,
-			ip, AVAILABLE, ipamLabel, randomString(ReferenceLength))
+			ip, AVAILABLE, ipamLabel, utils.RandomString(ReferenceLength))
 		if err != nil {
 			log.Errorf("[STORE] Unable to Insert row in Table 'ipaddress_range': %v", err)
 		}
@@ -264,7 +265,7 @@ func (store *DBStore) GetIPAddressFromReference(ipamLabel, reference string) str
 func (store *DBStore) ReleaseIP(ip string) {
 	deallocateIPSql := fmt.Sprintf("UPDATE ipaddress_range set status=%d, reference=\"%s\" where ipaddress=?",
 		AVAILABLE,
-		randomString(ReferenceLength),
+		utils.RandomString(ReferenceLength),
 	)
 
 	err := store.executeStatement(deallocateIPSql, ip)
