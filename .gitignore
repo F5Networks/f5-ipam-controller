@@ -1,2 +1,5 @@
 .idea
 .code
+*.coverprofile
+coverage.out
+coverage.html
