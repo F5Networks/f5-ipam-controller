@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/f5networks/CIS/_apis/build/status/F5Networks.f5-ipam-controller?branchName=main) ](https://dev.azure.com/f5networks/CIS/_build/latest?definitionId=7&branchName=main) [![Coverage Status](https://coveralls.io/repos/github/F5Networks/f5-ipam-controller/badge.svg?branch=main)](https://coveralls.io/github/F5Networks/f5-ipam-controller?branch=main)
+
 # F5 IPAM Controller
 
 The F5 IPAM Controller is a Docker container that runs in an orchestration environment and interfaces with an IPAM system.
