@@ -1,7 +1,11 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
-Next Release
+0.1.6
+------------
+Added Functionality
 ````````````
+* Added support for
+    - IPv6 address range support with default f5-ip-provider.
 
 Bug Fixes
 `````````
