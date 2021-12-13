@@ -1,0 +1,47 @@
+# Sample configuration for f5-ipam-controller with default provider. For persistent IP addresses upon restarts,
+# volume mounts are used. securityContext is used to change mount permissions to controller user.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: f5-ipam-controller
+  name: f5-ipam-controller
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: f5-ipam-controller
+  template:
+    metadata:
+      labels:
+        app: f5-ipam-controller
+    spec:
+      containers:
+        - args:
+            - --orchestration
+            - kubernetes
+            - --ip-range
+            - '{"Dev":"10:8:3:21:0:6:7:ffff-10:8:3:21:0:6:8:3","Test":"10:8:3:31:0:6:7:1-10:8:3:31:0:6:7:9",
+                 "Production":"10:8:3:41:0:6:7:9-10:8:3:41:0:6:7:40","Default":"10:8:3:51:0:6:7:ffff-10:8:3:51:0:6:8:3" }'
+            - --log-level
+            - DEBUG
+          command:
+            - /app/bin/f5-ipam-controller
+          image: f5networks/f5-ipam-controller:latest
+          imagePullPolicy: IfNotPresent
+          name: f5-ipam-controller
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+            - mountPath: /app/ipamdb
+              name: samplevol
+      securityContext:
+        fsGroup: 1200
+        runAsGroup: 1200
+        runAsUser: 1200
+      serviceAccount: bigip-controller
+      serviceAccountName: bigip-controller
+      volumes:
+        - name: samplevol
+          persistentVolumeClaim:
+            claimName: pvc-local

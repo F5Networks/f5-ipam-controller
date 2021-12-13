@@ -82,16 +82,19 @@ func (prov *IPAMProvider) Init(params Params) bool {
 
 		ipRangeConfig := strings.Split(ipRange, "-")
 		if len(ipRangeConfig) != 2 {
+			log.Errorf("[PROV] Invalid IP range provided for %s label", ipamLabel)
 			return false
 		}
 
 		startIP := net.ParseIP(ipRangeConfig[0])
 		if startIP == nil {
+			log.Errorf("[PROV] Invalid starting IP %s provided for %s label", ipRangeConfig[0], ipamLabel)
 			return false
 		}
 
 		endIP := net.ParseIP(ipRangeConfig[1])
 		if endIP == nil {
+			log.Errorf("[PROV] Invalid ending IP %s provided for %s label", ipRangeConfig[1], ipamLabel)
 			return false
 		}
 
