@@ -39,8 +39,8 @@ spec:
         fsGroup: 1200
         runAsGroup: 1200
         runAsUser: 1200
-      serviceAccount: bigip-controller
-      serviceAccountName: bigip-controller
+      serviceAccount: ipam-ctlr
+      serviceAccountName: ipam-ctlr
       volumes:
         - name: samplevol
           persistentVolumeClaim:
