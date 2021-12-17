@@ -252,7 +252,9 @@ func (store *DBStore) GetIPAddressFromReference(ipamLabel, reference string) str
 	)
 	err := store.db.QueryRow(queryString).Scan(&ipaddress, &status)
 	if err != nil {
-		log.Errorf("Unable to fetch IPAddress for reference %s with error %v", reference, err)
+		if err != sql.ErrNoRows {
+			log.Errorf("Unable to fetch IPAddress for host %s with error %v", reference, err)
+		}
 		return ""
 	}
 	if status == AVAILABLE {
