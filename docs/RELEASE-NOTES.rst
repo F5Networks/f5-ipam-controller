@@ -6,6 +6,7 @@ Added Functionality
 ````````````
 * Added support for
     - IPv6 address range support with default f5-ip-provider.
+    - Helm Charts
 
 Bug Fixes
 `````````
