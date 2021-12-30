@@ -1,0 +1,6 @@
+# Use the 'create api' subcommand to add watches to this file.
+- group: fic.f5.com
+  version: v1
+  kind: F5IpamCtlr
+  chart: helm-charts/f5-ipam-controller
+#+kubebuilder:scaffold:watch

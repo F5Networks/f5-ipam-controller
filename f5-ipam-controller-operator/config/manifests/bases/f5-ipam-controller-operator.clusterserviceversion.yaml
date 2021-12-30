@@ -1,0 +1,41 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: f5-ipam-controller-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions: {}
+  description: This Operator installs F5 Ipam controller(FIC)
+  displayName: F5 Ipam controller
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - ipam
+  links:
+  - name: F5 Ipam Controller Operator
+    url: https://f5-ipam-controller-operator.domain
+  maintainers:
+  - email: f5_cis_operators@f5.com
+    name: F5 Operators Team
+  maturity: alpha
+  provider:
+    name: F5 Inc.
+  version: 0.0.0

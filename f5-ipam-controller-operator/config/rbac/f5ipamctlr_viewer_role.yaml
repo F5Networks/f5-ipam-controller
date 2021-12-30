@@ -1,0 +1,20 @@
+# permissions for end users to view f5ipamctlrs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: f5ipamctlr-viewer-role
+rules:
+- apiGroups:
+  - fic.f5.com
+  resources:
+  - f5ipamctlrs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - fic.f5.com
+  resources:
+  - f5ipamctlrs/status
+  verbs:
+  - get
