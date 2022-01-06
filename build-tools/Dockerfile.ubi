@@ -16,7 +16,7 @@ RUN $REPOPATH/build-tools/rel-build.sh && \
     apt-get update && apt-get install -y go-md2man && \
 	go-md2man -in $REPOPATH/build-tools/help.md  -out /help.1
 
-FROM registry.redhat.io/ubi8/ubi-minimal
+FROM registry.redhat.io/ubi7/ubi-minimal
 
 LABEL name="f5networks/f5-ipam-controller" \
       vendor="F5 Networks" \
@@ -45,8 +45,12 @@ COPY --from=builder "/help.1" /
 COPY LICENSE /licenses/
 
 RUN microdnf update && \
-    microdnf --enablerepo=ubi-8-baseos install --nodocs python36 git shadow-utils && \
-    microdnf --enablerepo=ubi-8-baseos --enablerepo=ubi-8-appstream update nss-tools nss-softokn nss-util && \
+    microdnf --enablerepo=ubi-7-server-devtools-rpms --enablerepo=ubi-7-server-extras-rpms  \
+    --enablerepo=ubi-7-server-optional-rpms --enablerepo=ubi-server-rhscl-7-rpms \
+    install --nodocs git shadow-utils && \
+    microdnf --enablerepo=ubi-7-server-devtools-rpms --enablerepo=ubi-7-server-extras-rpms \
+    --enablerepo=ubi-7-server-optional-rpms --enablerepo=ubi-server-rhscl-7-rpms \
+    update nss-tools nss-softokn nss-util && \
     adduser -u 1200 ctlr && \
     microdnf remove  fipscheck fipscheck-lib libgnome-keyring libedit openssh openssh-clients \
     perl-Git  perl-TermReadKey  perl-macros git-core git-core-doc git less \
