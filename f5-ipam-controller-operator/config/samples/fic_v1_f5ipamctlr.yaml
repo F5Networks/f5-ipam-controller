@@ -1,0 +1,33 @@
+apiVersion: fic.f5.com/v1
+kind: F5IpamCtlr
+metadata:
+  name: f5ipamctlr-sample
+spec:
+  # Default values copied from <project_dir>/helm-charts/f5-ipam-controller/values.yaml
+  args:
+    infoblox_grid_host: 10.145.67.27
+    infoblox_labels: '{"Dev":{"cidr":"10.8.128.0/17"}}'
+    infoblox_netview: netview_10_145_77_87
+    infoblox_password: infoblox
+    infoblox_username: admin
+    infoblox_wapi_version: 2.11.2
+    ip_range: '{"test":"172.16.1.1-172.16.1.5", "prod":"172.16.1.50-172.16.1.55"}'
+    orchestration: kubernetes
+    provider: f5-ip-provider
+  image:
+    pullPolicy: Always
+    repo: f5-ipam-controller
+    user: f5networks
+    version: 0.1.5
+  namespace: kube-system
+  rbac:
+    create: true
+  serviceAccount:
+    create: true
+    name: null
+  volume:
+    mountName: fic-volume-mount
+    mountPath: /app/ipamdb
+    pvc: fic-volume-claim
+  
+  

@@ -1,0 +1,24 @@
+# permissions for end users to edit f5ipamctlrs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: f5ipamctlr-editor-role
+rules:
+- apiGroups:
+  - fic.f5.com
+  resources:
+  - f5ipamctlrs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - fic.f5.com
+  resources:
+  - f5ipamctlrs/status
+  verbs:
+  - get
