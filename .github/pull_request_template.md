@@ -7,7 +7,7 @@
 ## General Checklist
 - [ ] Updated Added functionality/ bug fix in release notes
 - [ ] Added examples for new feature
-- [ ] Updated the documentation
+- [ ] Updated the troubleshooting guide or documentation
 
 ## CRD Checklist
 - [ ] Updated required CR schema

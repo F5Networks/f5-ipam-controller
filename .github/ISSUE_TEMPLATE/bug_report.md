@@ -6,6 +6,8 @@ labels: bug, untriaged
 assignees: ''
 
 ---
+Before you raise a new bug, please ensure you have visited the troubleshooting guide 
+- [ ] Visited the [troubleshooting guide](https://github.com/F5Networks/f5-ipam-controller/blob/main/docs/faq/README.md)
 
 #### Setup Details
  FIC Version : x.x.x
