@@ -66,7 +66,11 @@ func fileExists(name string) bool {
 			if err != nil {
 				log.Errorf("[STORE] Unable to create IPAM DB file: %v", err)
 			}
-			defer file.Close()
+			defer func() {
+				if err == nil {
+					_ = file.Close()
+				}
+			}()
 			return err == nil
 		} else if os.IsPermission(err) {
 			log.Errorf("[STORE] Unable to read IPAM DB file due to permission issue: %v", err)

@@ -57,6 +57,11 @@ func (prov *IPAMProvider) Init(params Params) bool {
 		return false
 	}
 
+	if prov.store == nil {
+		log.Error("[PROV] Store not initialized")
+		return false
+	}
+
 	labelMap := prov.store.GetLabelMap()
 
 	for ipamLabel := range labelMap {
