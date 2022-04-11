@@ -1,5 +1,11 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
+0.1.7
+------------
+Bug Fixes
+`````````
+*:issues:`98` Handled crash in case of failure in store initialisation
+
 0.1.6
 ------------
 Added Functionality
