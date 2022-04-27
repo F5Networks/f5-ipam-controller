@@ -50,7 +50,7 @@ RUN microdnf update && \
     adduser -u 1200 ctlr && \
     microdnf remove  fipscheck fipscheck-lib libgnome-keyring libedit openssh openssh-clients \
     perl-Git  perl-TermReadKey  perl-macros git-core git-core-doc git less \
-    rsync shadow-utils  && \
+    rsync shadow-utils archive-zip debug-macho && \
     microdnf clean all \
     && echo "{\"version\": \"${BUILD_VERSION}\", \"build\": \"${BUILD_INFO}\"}" > $APPPATH/VERSION_BUILD.json \
     && chown -R ctlr "$APPPATH" && chmod -R 755 "$APPPATH"
@@ -60,4 +60,3 @@ USER ctlr
 COPY --from=builder /bin/f5-ipam-controller $APPPATH/bin
 
 CMD ["/app/bin/f5-ipam-controller"]
-
