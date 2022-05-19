@@ -326,7 +326,7 @@ func (store *DBStore) AddLabel(label, ipRange string) bool {
 		ipRange,
 	)
 	if err != nil {
-		fmt.Printf("[STORE] Unable to Insert row in Table 'label_map': %v", err)
+		log.Errorf("[STORE] Unable to Insert row in Table 'label_map': %v", err)
 		return false
 	}
 	return true

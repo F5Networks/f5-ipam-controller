@@ -8,6 +8,7 @@ Added Functionality
 
 Bug Fixes
 ````````````
+ :issues:`115` Reference handled properly in Database table
 
 0.1.7
 ------------
