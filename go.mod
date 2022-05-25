@@ -3,6 +3,7 @@ module github.com/F5Networks/f5-ipam-controller
 go 1.15
 
 require (
+	github.com/google/uuid v1.1.2
 	github.com/infobloxopen/infoblox-go-client v1.1.1
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/onsi/ginkgo v1.16.4
