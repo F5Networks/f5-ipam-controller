@@ -5,6 +5,7 @@ Next Release
 -------------
 Added Functionality
 ```````````````````
+* Support for label with multiple IP ranges with comma seperated values
 
 Bug Fixes
 ````````````

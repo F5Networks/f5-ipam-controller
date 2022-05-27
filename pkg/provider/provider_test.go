@@ -97,4 +97,13 @@ var _ = Describe("Static IP Provider", func() {
 		// get the ipaddress from invalid label
 		Expect(prov.GetIPAddressFromReference("invalid", "")).To(Equal(""))
 	})
+	It("Initialize provider with multiple ranges for same label", func() {
+		ipRangeHelper(`{"test":"172.16.1.1-172.16.1.10,172.16.1.21-172.16.1.30"}`, true)
+	})
+	It("Initialize provider with a combination of label with multiple ranges and lable with single range", func() {
+		ipRangeHelper(`{"test":"172.16.1.1-172.16.1.10,172.16.1.21-172.16.1.30", "prod":"172.16.1.50-172.16.1.55"}`, true)
+	})
+	It("Initialize provider with a combination of label with multiple ranges and lable with single range", func() {
+		ipRangeHelper(`{"default":"172.16.2.50-172.16.2.55","test":"172.16.1.1-172.16.1.10,172.16.1.21-172.16.1.30", "prod":"172.16.1.50-172.16.1.55"}`, true)
+	})
 })
