@@ -60,7 +60,21 @@ image:
 # requests_cpu: 100m
 # requests_memory: 512Mi
 
+pvc:
+  # set create tag to true to create new persistent volume claim and set storageClassName,accessMode and storage
+  create: false
+
+  #name of the  persistent volume claim to be used
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+  #if create set to false below parameters will be ignored
+  storageClassName:
+  accessMode: ReadWriteOnce
+  storage:
+
 volume:
   mountPath: /app/ipamdb
   mountName: fic-volume-mount
-  pvc: fic-volume-claim
+
+
