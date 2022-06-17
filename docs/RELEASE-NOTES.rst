@@ -1,15 +1,19 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
 
-Next Release
+0.1.8
 -------------
 Added Functionality
 ```````````````````
-* Support for label with multiple IP ranges with comma seperated values
+* Support for label with multiple IP ranges with comma seperated values :issues:`101`. See `documentation <https://raw.githubusercontent.com/F5Networks/f5-ipam-controller/main/docs/config_examples/f5-ip-provider/ipv4-addr-range-default-provider-deployment.yaml>`_
 
 Bug Fixes
 ````````````
- :issues:`115` Reference handled properly in Database table
+* :issues:`115` Reference handled properly in Database table
+
+Known Issues
+`````````````
+* Appending new pool to existing range using the comma operator triggers FIC to reassign the newIP with new IP pool for the corresponding ipamLabel domains/keys
 
 0.1.7
 ------------
