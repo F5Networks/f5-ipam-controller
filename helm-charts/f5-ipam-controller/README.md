@@ -27,27 +27,31 @@ This is the simplest way to install the FIC on OpenShift/Kubernetes cluster. Hel
     
 ## Chart parameters:
 
-| Parameter             | Required | Description                                                              | Default                       |
-|-----------------------|----------|--------------------------------------------------------------------------|-------------------------------|
- | rbac.create           | Optional | Create ClusterRole and ClusterRoleBinding                                | true                          |
- | serviceAccount.name   | Optional | name of the ServiceAccount for FIC controller                            | <chatname>-f5-ipam-controller |
- | serviceAccount.create | Optional | Create service account for the FIC controller                            | true                          |
- | namespace             | Optional | name of namespace FIC lives and watches for IPAM resources               | kube-system                   |
- | image.user            | Optional | FIC Controller image repository username                                 | f5networks                    |
-| image.repo            | Optional | FIC Controller image repository name                                     | f5-ipam-controller            |
-| image.pullPolicy      | Optional | FIC Controller image pull policy                                         | Always                        |
-| image.version         | Optional | FIC Controller image tag                                                 | NA                            |
- | volume.mountPath      | Optional | Mount Path that the controller places the DB file                        | NA                            |
- | volume.mountName      | Optional | Name of the volume mounted                                               | NA                            |
- | volume.pvc            | Optional | Persistent volume claim, using which enables controller to access volume | NA                            |
- | nodeSelector	         | Optional	| dictionary of Node selector labels	                                   | empty
- | tolerations	         |Optional	| Array of labels	                                                       | empty
- | limits_cpu	         | Optional	| CPU limits for the pod	                                               | 100m
- | limits_memory	     | Optional	| Memory limits for the pod                                                | 512Mi
- | requests_cpu	         | Optional | CPU request for the pod                                                  | 100m
- | requests_memory	     | Optional	| Memory request for the pod                                               | 512Mi
- | affinity	             | Optional	| Dictionary of affinity                                                   | empty
- | securityContext	     | Optional	| Dictionary of securityContext	                                           | empty
+| Parameter             | Required  | Description                                                | Default                        |
+|-----------------------|-----------|------------------------------------------------------------|--------------------------------|
+ | rbac.create           | Optional  | Create ClusterRole and ClusterRoleBinding                  | true                           |
+ | serviceAccount.name   | Optional  | name of the ServiceAccount for FIC controller              | <chatname>-f5-ipam-controller  |
+ | serviceAccount.create | Optional  | Create service account for the FIC controller              | true                           |
+ | namespace             | Optional  | name of namespace FIC lives and watches for IPAM resources | kube-system                    |
+ | image.user            | Optional  | FIC Controller image repository username                   | f5networks                     |
+| image.repo            | Optional  | FIC Controller image repository name                       | f5-ipam-controller             |
+| image.pullPolicy      | Optional  | FIC Controller image pull policy                           | Always                         |
+| image.version         | Optional  | FIC Controller image tag                                   | NA                             |
+| pvc.name              | Optional  | Name of the persistent volume claim for FIC controller     | <chartname>-f5-ipam-controller |
+| pvc.create            | Optional  | Create persistent volume claim for FIC controller          | false                          |
+| pvc.storageClassName  | Optional  | Name of the storage class                                  | NA                             |
+| pvc.accessMode        | Optional  | Access Mode for the volume                                 | ReadWriteOnce                             |
+| pvc.storage           | Optional  | Required storage for FIC controller volume                 | NA                             |
+| volume.mountPath      | Optional  | Mount Path that the controller places the DB file          | NA                             |
+| volume.mountName      | Optional  | Name of the volume mounted                                 | NA                             |
+| nodeSelector	         | Optional	 | dictionary of Node selector labels	                        | empty                          
+| tolerations	          | Optional	 | Array of labels	                                           | empty                          
+| limits_cpu	           | Optional	 | CPU limits for the pod	                                    | 100m                           
+| limits_memory	        | Optional	 | Memory limits for the pod                                  | 512Mi                          
+| requests_cpu	         | Optional  | CPU request for the pod                                    | 100m                           
+| requests_memory	      | Optional	 | Memory request for the pod                                 | 512Mi                          
+| affinity	             | Optional	 | Dictionary of affinity                                     | empty                          
+| securityContext	      | Optional	 | Dictionary of securityContext	                             | empty                          
 
 See the FIC documentation for a full list of args supported for FIC [FIC Configuration Options](https://github.com/F5Networks/f5-ipam-controller/blob/main/README.md)
 
