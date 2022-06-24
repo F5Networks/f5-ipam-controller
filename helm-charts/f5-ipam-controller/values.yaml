@@ -78,3 +78,9 @@ volume:
   mountName: fic-volume-mount
 
 
+# To enable tolerations uncomment below block and customize key,effect,operator.
+# Below is just an example and different key,value and operators are also supported
+#tolerations:
+#  - key: "node-role.kubernetes.io/master"
+#    effect: "NoSchedule"
+#    operator: "Exists"
