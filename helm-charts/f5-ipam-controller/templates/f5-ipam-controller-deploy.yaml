@@ -119,6 +119,6 @@ spec:
       volumes:
       - name: {{ .Values.volume.mountName }}
         persistentVolumeClaim:
-          claimName: {{ .Values.volume.pvc }}
+          claimName: {{ template "f5-ipam-controller.persistentVolumeClaimName" . }}
   {{- end }}
 {{- end }}
