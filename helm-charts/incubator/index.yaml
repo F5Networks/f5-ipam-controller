@@ -2,12 +2,12 @@ apiVersion: v1
 entries:
   f5-ipam-controller:
   - apiVersion: v1
-    created: "2022-06-27T11:35:43.108504609Z"
+    created: "2022-07-04T06:54:44.272732535Z"
     description: Deploy the F5 Networks IPAM Controller for Kubernetes and OpenShift
       (f5-ipam-controller).
-    digest: 3ca723d7875421590682209197ed3715fe403217557727522db32c1faaba7f94
+    digest: 24c8b2faa0f19f9fb64729f7a2d2a00f5736ef90a5722b10a229a98902b731c1
     name: f5-ipam-controller
     urls:
     - https://F5Networks.github.io/f5-ipam-controller/helm-charts/incubator/f5-ipam-controller-0.0.1.tgz
     version: 0.0.1
-generated: "2022-06-27T11:35:43.107516902Z"
+generated: "2022-07-04T06:54:44.271839811Z"
