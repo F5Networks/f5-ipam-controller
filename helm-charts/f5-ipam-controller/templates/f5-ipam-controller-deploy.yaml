@@ -82,7 +82,8 @@ spec:
         - --infoblox-wapi-version={{ .Values.args.infoblox_wapi_version }}
         - --infoblox-username={{ .Values.args.infoblox_username }}
         - --infoblox-password={{ .Values.args.infoblox_password }}
-        - --infoblox-labels={{ .Values.args.infoblox_labels }}
+        - --infoblox-labels
+        - {{ .Values.args.infoblox_labels | squote }}
         - --infoblox-netview={{ .Values.args.infoblox_netview }}
         {{- end }}
         {{- if .Values.args.infoblox_wapi_port }}
