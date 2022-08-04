@@ -26,12 +26,31 @@ import (
 )
 
 type IPAMProvider struct {
-	store      sqlite.StoreProvider
+	store      StoreProvider
 	ipamLabels map[string]bool
 }
 
 type Params struct {
 	Range string
+}
+
+type StoreProvider interface {
+	CreateTables() bool
+	InsertIPs(ips []string, ipamLabel string)
+	DisplayIPRecords()
+
+	AllocateIP(ipamLabel, reference string) string
+	ReleaseIP(ip string)
+	GetIPAddressFromARecord(ipamLabel, hostname string) string
+	GetIPAddressFromReference(ipamLabel, reference string) string
+
+	CreateARecord(hostname, ipAddr string) bool
+	DeleteARecord(hostname, ipAddr string) bool
+
+	GetLabelMap() map[string]string
+	AddLabel(label, ipRange string) bool
+	RemoveLabel(label string) bool
+	CleanUpLabel(label string)
 }
 
 func NewProvider(params Params) *IPAMProvider {

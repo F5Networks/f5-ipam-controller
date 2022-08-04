@@ -22,6 +22,7 @@ import (
 	"github.com/F5Networks/f5-ipam-controller/pkg/utils"
 	"os"
 
+	"github.com/F5Networks/f5-ipam-controller/pkg/provider"
 	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -38,25 +39,6 @@ const (
 
 	ReferenceLength = 16
 )
-
-type StoreProvider interface {
-	CreateTables() bool
-	InsertIPs(ips []string, ipamLabel string)
-	DisplayIPRecords()
-
-	AllocateIP(ipamLabel, reference string) string
-	ReleaseIP(ip string)
-	GetIPAddressFromARecord(ipamLabel, hostname string) string
-	GetIPAddressFromReference(ipamLabel, reference string) string
-
-	CreateARecord(hostname, ipAddr string) bool
-	DeleteARecord(hostname, ipAddr string) bool
-
-	GetLabelMap() map[string]string
-	AddLabel(label, ipRange string) bool
-	RemoveLabel(label string) bool
-	CleanUpLabel(label string)
-}
 
 func fileExists(name string) bool {
 	if _, err := os.Stat(name); err != nil {
@@ -83,7 +65,7 @@ func fileExists(name string) bool {
 	return true
 }
 
-func NewStore() StoreProvider {
+func NewStore() provider.StoreProvider {
 	if !fileExists(dbFileName) {
 		return nil
 	}
