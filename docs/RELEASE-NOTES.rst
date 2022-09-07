@@ -10,6 +10,14 @@ Added Functionality
 Bug Fixes
 ````````````
 
+0.1.9
+-------------
+Added Functionality
+```````````````````
+* Add support openshift operator in openshift v4.10
+* Added support for multiple infoblox labels with Helm charts
+* Added PVC claim support in Helm charts
+
 0.1.8
 -------------
 Added Functionality
