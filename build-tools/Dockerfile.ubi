@@ -45,8 +45,8 @@ COPY --from=builder "/help.1" /
 COPY LICENSE /licenses/
 
 RUN microdnf update && \
-    microdnf --enablerepo=ubi-8-baseos install --nodocs python36 git shadow-utils && \
-    microdnf --enablerepo=ubi-8-baseos --enablerepo=ubi-8-appstream update nss-tools nss-softokn nss-util && \
+    microdnf --enablerepo=ubi-8-baseos-rpms install --nodocs python36 git shadow-utils && \
+    microdnf --enablerepo=ubi-8-baseos-rpms --enablerepo=ubi-8-appstream-rpms update nss-tools nss-softokn nss-util && \
     adduser -u 1200 ctlr && \
     microdnf remove  fipscheck fipscheck-lib libgnome-keyring libedit openssh openssh-clients \
     perl-Git  perl-TermReadKey  perl-macros git-core git-core-doc git less \
