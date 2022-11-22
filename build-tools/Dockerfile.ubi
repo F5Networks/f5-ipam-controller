@@ -48,9 +48,8 @@ RUN microdnf update && \
     microdnf --enablerepo=ubi-8-baseos-rpms install --nodocs python36 git shadow-utils && \
     microdnf --enablerepo=ubi-8-baseos-rpms --enablerepo=ubi-8-appstream-rpms update nss-tools nss-softokn nss-util && \
     adduser -u 1200 ctlr && \
-    microdnf remove  fipscheck fipscheck-lib libgnome-keyring libedit openssh openssh-clients \
-    perl-Git  perl-TermReadKey  perl-macros git-core git-core-doc git less \
-    rsync shadow-utils archive-zip debug-macho && \
+    microdnf remove libedit openssh openssh-clients perl-Git perl-TermReadKey perl-macros git-core git-core-doc git \
+    less shadow-utils && \
     microdnf clean all \
     && echo "{\"version\": \"${BUILD_VERSION}\", \"build\": \"${BUILD_INFO}\"}" > $APPPATH/VERSION_BUILD.json \
     && chown -R ctlr "$APPPATH" && chmod -R 755 "$APPPATH"
