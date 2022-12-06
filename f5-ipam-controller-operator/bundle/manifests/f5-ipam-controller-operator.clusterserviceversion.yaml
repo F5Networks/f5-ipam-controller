@@ -52,7 +52,7 @@ metadata:
     containerImage: 'registry.connect.redhat.com/f5networks/f5-ipam-controller-operator@sha256:65eb080a6610d3422fb5f36aba312c403b1971371e8cfba79187f7008f7d7902'
     support: F5 Operators Team <f5_cis_operators@f5.com>
     repository: 'https://github.com/F5Networks/f5-ipam-controller'
-  name: f5-ipam-controller-operator.v0.0.2
+  name: f5-ipam-controller-operator.v0.0.3
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -305,5 +305,5 @@ spec:
   maturity: alpha
   provider:
     name: F5 Inc.
-  version: 0.0.2
+  version: 0.0.3
   minKubeVersion: 1.13.0
