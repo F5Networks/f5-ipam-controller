@@ -22,7 +22,7 @@ This is the simplest way to install the FIC on OpenShift/Kubernetes cluster. Hel
 
 - Install the Helm chart using the following command:
   
-    ```helm install -f values.yaml <new-chart-name> f5-stable/f5-ipam-controller```
+    ```helm install -f values.yaml <new-chart-name> f5-ipam-stable/f5-ipam-controller```
 
     
 ## Chart parameters:
