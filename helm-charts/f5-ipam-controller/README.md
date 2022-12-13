@@ -51,7 +51,8 @@ This is the simplest way to install the FIC on OpenShift/Kubernetes cluster. Hel
 | requests_cpu	         | Optional  | CPU request for the pod                                    | 100m                           
 | requests_memory	      | Optional	 | Memory request for the pod                                 | 512Mi                          
 | affinity	             | Optional	 | Dictionary of affinity                                     | empty                          
-| securityContext	      | Optional	 | Dictionary of securityContext	                             | empty                          
+| securityContext	      | Optional	 | Dictionary of securityContext	                             | empty    
+| args.infoblox_login_secret   | Optional | Secret that contains infoblox login credentials             | empty                        |
 
 See the FIC documentation for a full list of args supported for FIC [FIC Configuration Options](https://github.com/F5Networks/f5-ipam-controller/blob/main/README.md)
 
