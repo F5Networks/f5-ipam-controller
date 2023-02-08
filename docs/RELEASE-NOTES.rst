@@ -9,6 +9,7 @@ Added Functionality
 
 Bug Fixes
 ````````````
+* :issues:`2747` Fix to persist IP addresses after CIS restart
 
 0.1.8
 -------------
