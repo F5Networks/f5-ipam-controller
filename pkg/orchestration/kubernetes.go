@@ -264,6 +264,21 @@ func (k8sc *K8sIPAMClient) processResource() bool {
 			k8sc.reqChan <- ipamReq
 		}
 	case DELETE:
+		// wait for max retry time(12 seconds) to check if delete operation is followed by create
+		// if IPAM resource is found in max retry time, then delete operation will be skipped
+		// if IPAM resource is not found in max retry time, then delete operation will be processed
+		maxRetries := 3
+		retry := 0
+		for retry < maxRetries {
+			time.Sleep(4 * time.Second)
+			_, err := k8sc.ipamCli.Get(rKey.rsc.Namespace, rKey.rsc.Name)
+			// if error is nil, we have ipam resource created. skip deletion of hosts info from backend.
+			if err == nil {
+				return true
+			}
+			retry++
+		}
+
 		stsMap := statusMap{}
 		ipams, err := k8sc.ipamCli.List(rKey.rsc.Namespace)
 		if err != nil {
