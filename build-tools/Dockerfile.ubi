@@ -1,4 +1,4 @@
-FROM golang:1.15 as builder
+FROM golang:1.19 as builder
 
 ARG REPOPATH=$GOPATH/src/github.com/F5Networks/f5-ipam-controller
 ARG RUN_TESTS
@@ -16,7 +16,7 @@ RUN $REPOPATH/build-tools/rel-build.sh && \
     apt-get update && apt-get install -y go-md2man && \
 	go-md2man -in $REPOPATH/build-tools/help.md  -out /help.1
 
-FROM registry.redhat.io/ubi8/ubi-minimal
+FROM registry.redhat.io/ubi9/ubi-minimal
 
 LABEL name="f5networks/f5-ipam-controller" \
       vendor="F5 Networks" \
@@ -44,12 +44,12 @@ RUN mkdir -p "$APPPATH/bin"
 COPY --from=builder "/help.1" /
 COPY LICENSE /licenses/
 
-RUN microdnf update && \
-    microdnf --enablerepo=ubi-8-baseos-rpms install --nodocs python36 git shadow-utils && \
-    microdnf --enablerepo=ubi-8-baseos-rpms --enablerepo=ubi-8-appstream-rpms update nss-tools nss-softokn nss-util && \
+RUN microdnf update -y && \
+    microdnf --enablerepo=ubi-9-baseos-rpms install --nodocs python39 python3-pip git shadow-utils -y  && \
+    microdnf --enablerepo=ubi-9-baseos-rpms --enablerepo=ubi-9-appstream-rpms update nss-tools nss-softokn nss-util  scl-utils -y && \
     adduser -u 1200 ctlr && \
     microdnf remove libedit openssh openssh-clients perl-Git perl-TermReadKey perl-macros git-core git-core-doc git \
-    less shadow-utils && \
+    less shadow-utils -y && \
     microdnf clean all \
     && echo "{\"version\": \"${BUILD_VERSION}\", \"build\": \"${BUILD_INFO}\"}" > $APPPATH/VERSION_BUILD.json \
     && chown -R ctlr "$APPPATH" && chmod -R 755 "$APPPATH"
