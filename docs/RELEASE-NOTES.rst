@@ -1,15 +1,17 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
 
-Next Release
+0.1.9
 -------------
-
 Added Functionality
 ```````````````````
+**What’s new:**
+    * Base image upgraded to RedHat UBI-9 for FIC Container image
 
 Bug Fixes
 ````````````
-* :issues:`2747` Fix to persist IP addresses after CIS restart
+* `Issue 2747 <https://github.com/F5Networks/k8s-bigip-ctlr/issues/2747>`_ Fix to persist IP addresses after CIS restart
+
 
 0.1.8
 -------------
