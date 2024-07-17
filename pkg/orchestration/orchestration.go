@@ -30,6 +30,6 @@ type Orchestrator interface {
 	Stop()
 }
 
-func NewOrchestrator() Orchestrator {
-	return NewIPAMK8SClient()
+func NewOrchestrator(namespaces []string) Orchestrator {
+	return NewIPAMK8SClient(namespaces)
 }

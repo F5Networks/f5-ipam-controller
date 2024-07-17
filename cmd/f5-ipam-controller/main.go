@@ -34,9 +34,10 @@ var (
 	ibFlags        *flag.FlagSet
 
 	// Global
-	logLevel *string
-	orch     *string
-	provider *string
+	logLevel   *string
+	orch       *string
+	provider   *string
+	namespaces *[]string
 
 	// Default Provider
 	iprange *string
@@ -77,7 +78,9 @@ func init() {
 		"Required, orchestration that the controller is running in.")
 	provider = globalFlags.String("ipam-provider", DefaultProvider,
 		"Required, the IPAM system that the controller will interface with.")
-
+	namespaces = globalFlags.StringArray("namespace", []string{},
+		"Optional, Kubernetes namespace(s) to watch."+
+			"If left blank controller will watch only kube-system namespace")
 	iprange = basicProvFlags.String("ip-range", "",
 		"Optional, the Default Provider needs iprange to build pools of IP Addresses")
 
@@ -239,7 +242,7 @@ func main() {
 	}
 	log.Infof("[INIT] Starting: F5 IPAM Controller - Version: %s, BuildInfo: %s", version, buildInfo)
 
-	orcr := orchestration.NewOrchestrator()
+	orcr := orchestration.NewOrchestrator(*namespaces)
 	if orcr == nil {
 		log.Error("Unable to create IPAM Client")
 		os.Exit(1)
