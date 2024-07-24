@@ -31,11 +31,12 @@ The F5 IPAM Controller acts as an interface to CIS to provide an IP address from
 
 **Deployment Options**
 
-| PARAMETER | TYPE | REQUIRED | DESCRIPTION |
-| ------ | ------ | ------ | ------ |
-| orchestration | String | Required | The orchestration parameter holds the orchestration environment i.e. Kubernetes. |
-| ipam-provider | String | Required |  ipam-provider parameter holds the IP provider that holds the ownership of providing IP addresses such as infoblox, f5-ip-provider. Default is *f5-ip-provider*. |
-| log-level | String | Optional |  Log level parameter specify various logging level such as DEBUG, INFO, WARNING, ERROR, CRITICAL. |
+| PARAMETER     | TYPE   | REQUIRED | DESCRIPTION                                                                                                                                                     |
+|---------------|--------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| orchestration | String | Required | The orchestration parameter holds the orchestration environment i.e. Kubernetes.                                                                                |
+| ipam-provider | String | Required | ipam-provider parameter holds the IP provider that holds the ownership of providing IP addresses such as infoblox, f5-ip-provider. Default is *f5-ip-provider*. |
+| log-level     | String | Optional | Log level parameter specify various logging level such as DEBUG, INFO, WARNING, ERROR, CRITICAL.                                                                |
+| namespace     | String | Optional | Kubernetes namespace(s) to watch. By default controller will watch only kube-system namespace. To specify multiple namespace, use multiple --namespace flags.   |
 
 **Deployment Options of Provider (f5-ip-provider)**
 
@@ -45,16 +46,16 @@ The F5 IPAM Controller acts as an interface to CIS to provide an IP address from
 
 **Deployment Options of Provider (infoblox)**
 
-| PARAMETER | TYPE | REQUIRED | DESCRIPTION |
-| ------ | ------ | ------ | ------ |
-| infoblox-labels | String | Required | infoblox labels holds the mappings for infoblox's CIDR |
-| infoblox-grid-host | String | Required |  URL (or IP Address) of Infoblox Grid Host |
-| infoblox-wapi-port | String | Optional | Port that the Infoblox Server listens on. Default is 443 |
-| infoblox-wapi-version | String | Required | Web API version of Infoblox
-| infoblox-username | String | Required | Username of Infoblox User |
-| infoblox-password | String | Required | Password of the given Infoblox User |
-| infoblox-netview | String | Required | Netview from which IP addresses needs to be allocated |
-| credentials-directory | String | Optional | Credentials can be mounted from k8s secrets |
+| PARAMETER             | TYPE   | REQUIRED | DESCRIPTION                                              |
+|-----------------------|--------|----------|----------------------------------------------------------|
+| infoblox-labels       | String | Required | infoblox labels holds the mappings for infoblox's CIDR   |
+| infoblox-grid-host    | String | Required | URL (or IP Address) of Infoblox Grid Host                |
+| infoblox-wapi-port    | String | Optional | Port that the Infoblox Server listens on. Default is 443 |
+| infoblox-wapi-version | String | Required | Web API version of Infoblox                              |
+| infoblox-username     | String | Required | Username of Infoblox User                                |
+| infoblox-password     | String | Required | Password of the given Infoblox User                      |
+| infoblox-netview      | String | Required | Netview from which IP addresses needs to be allocated    |
+| credentials-directory | String | Optional | Credentials can be mounted from k8s secrets              |
 
 
 Note: On how to configure these Configuration Options, please refer to IPAM Deployment YAML example in below.

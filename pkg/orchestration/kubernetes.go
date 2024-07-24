@@ -67,7 +67,7 @@ type ResourceMeta struct {
 	namespace string
 }
 
-func NewIPAMK8SClient() *K8sIPAMClient {
+func NewIPAMK8SClient(namespaces []string) *K8sIPAMClient {
 	log.Debugf("Creating IPAM Kubernetes Client")
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -85,11 +85,13 @@ func NewIPAMK8SClient() *K8sIPAMClient {
 		UpdateFunc: func(oldObj, newObj interface{}) { k8sIPAMClient.enqueueUpdatedIPAM(oldObj, newObj) },
 		DeleteFunc: func(obj interface{}) { k8sIPAMClient.enqueueDeletedIPAM(obj) },
 	}
-
+	if len(namespaces) == 0 {
+		namespaces = append(namespaces, DefaultNamespace)
+	}
 	ipamParams := ipammachinery.Params{
 		Config:        config,
 		EventHandlers: eventHandlers,
-		Namespaces:    []string{DefaultNamespace},
+		Namespaces:    namespaces,
 	}
 
 	ipamCli := ipammachinery.NewIPAMClient(ipamParams)

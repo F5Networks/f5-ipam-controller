@@ -1,14 +1,27 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
 
-Next Release
+0.1.11
 -------------
 
 Added Functionality
 ```````````````````
+**What’s new:**
+    * Support for namespace to watch the multiple namespaces for IPAM CRD
 
-Bug Fixes
-````````````
+0.1.10
+``````````````````````````
+
+Vulnerability Fixes
+```````````````````
+CVE-2023-38545, CVE-2023-38546, CVE-2022-48337, CVE-2022-48338, CVE-2022-48339, CVE-2023-2491, CVE-2023-24329,
+CVE-2023-40217, CVE-2023-4527, CVE-2023-4806, CVE-2023-4813, CVE-2023-4911, CVE-2023-44487, CVE-2023-28617,
+CVE-2022-40897
+
+
+Known Issues
+`````````````
+CVE-2024-2961
 
 0.1.9
 -------------
