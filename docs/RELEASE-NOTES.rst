@@ -8,6 +8,7 @@ Added Functionality
 ```````````````````
 **What’s new:**
     * Support for namespace to watch the multiple namespaces for IPAM CRD
+    * Operator support for OpenShift 4.16
 
 0.1.10
 ``````````````````````````
