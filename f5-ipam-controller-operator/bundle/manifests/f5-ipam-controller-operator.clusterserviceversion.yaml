@@ -50,7 +50,7 @@ metadata:
     operators.operatorframework.io/project_layout: helm.sdk.operatorframework.io/v1
     repository: https://github.com/F5Networks/f5-ipam-controller
     support: F5 Operators Team <f5_cis_operators@f5.com>
-  name: f5-ipam-controller-operator.v0.0.6
+  name: f5-ipam-controller-operator.v0.0.7
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -372,4 +372,4 @@ spec:
   minKubeVersion: 1.13.0
   provider:
     name: F5 Networks Inc.
-  version: 0.0.6
+  version: 0.0.7
