@@ -2,7 +2,7 @@ package provider
 
 import (
 	"github.com/F5Networks/f5-ipam-controller/pkg/provider/sqlite/mock"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"testing"
 )

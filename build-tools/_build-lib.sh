@@ -27,7 +27,7 @@ if [ -z $BUILD_INFO ]; then
 fi
 
 ginkgo_test_with_coverage () {
-    ginkgo -r -compilers 1 -keepGoing -trace -progress -cover
+    ginkgo -r -compilers 1 --keep-going -trace -progress -cover -coverprofile coverage.out
     echo "Gathering unit test code coverage for 'release' build..."
     gather_coverage $WKDIR
 }
@@ -42,7 +42,6 @@ ginkgo_test_with_profile () {
 
 
 gather_coverage() {
-    gocovmerge `find . -name *.coverprofile` > coverage.out
     go tool cover -html=coverage.out -o coverage.html
     go tool cover -func=coverage.out
     # Total coverage for CI
