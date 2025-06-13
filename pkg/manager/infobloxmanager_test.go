@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/F5Networks/f5-ipam-controller/pkg/ipamspec"
 	ibxclient "github.com/infobloxopen/infoblox-go-client"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

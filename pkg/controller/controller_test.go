@@ -4,7 +4,7 @@ import (
 	"github.com/F5Networks/f5-ipam-controller/pkg/ipamspec"
 	"github.com/F5Networks/f5-ipam-controller/pkg/manager/mock"
 	mockorch "github.com/F5Networks/f5-ipam-controller/pkg/orchestration/mock"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"testing"
 )
