@@ -1,5 +1,11 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
+0.1.12
+------------
+Added Functionality
+```````````````````
+**What’s new:**
+    * Operator support for OpenShift 4.17 and 4.18
 
 0.1.11
 -------------
