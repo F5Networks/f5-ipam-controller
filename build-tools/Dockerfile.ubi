@@ -52,6 +52,9 @@ RUN microdnf update -y && \
     && echo "{\"version\": \"${BUILD_VERSION}\", \"build\": \"${BUILD_INFO}\"}" > $APPPATH/VERSION_BUILD.json \
     && chown -R ctlr "$APPPATH" && chmod -R 755 "$APPPATH"
 
+# Remove shell access
+RUN rm -f /bin/sh /bin/bash
+
 USER ctlr
 
 COPY --from=builder /bin/f5-ipam-controller $APPPATH/bin

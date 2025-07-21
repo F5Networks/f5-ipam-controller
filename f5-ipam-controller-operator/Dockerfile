@@ -18,4 +18,10 @@ COPY f5-ipam-controller-operator/licenses /licenses
 
 COPY f5-ipam-controller-operator/watches.yaml ${HOME}/watches.yaml
 COPY helm-charts/f5-ipam-controller  ${HOME}/helm-charts/f5-ipam-controller
+
+# Remove shell access
+USER root
+RUN rm -f /bin/sh /bin/bash
+USER 1001
+
 WORKDIR ${HOME}
