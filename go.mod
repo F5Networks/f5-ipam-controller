@@ -33,7 +33,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
-	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/term v0.30.0 // indirect
