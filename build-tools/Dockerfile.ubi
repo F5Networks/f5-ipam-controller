@@ -19,6 +19,7 @@ RUN $REPOPATH/build-tools/rel-build.sh && \
 FROM registry.redhat.io/ubi9/ubi-minimal
 
 LABEL name="f5networks/f5-ipam-controller" \
+      maintainer="F5 Networks <automation_toolchain_pm@f5.com>" \
       vendor="F5 Networks" \
       # version - should be passed in via docker build
       url="https://clouddocs.f5.com/containers/latest/userguide/ipam/" \
