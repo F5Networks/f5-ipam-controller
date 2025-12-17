@@ -1,9 +1,11 @@
 package utils
 
 import (
-	"github.com/google/uuid"
+	"fmt"
 	"net"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 func IsIPV4Addr(ipAddr string) bool {
@@ -48,5 +50,17 @@ func RandomString(len int) string {
 		return id.String()[:len]
 	} else {
 		return ""
+	}
+}
+func Ipv4ToPaddedString(ip string) string {
+	splitIp := strings.Split(ip, ".")
+	return fmt.Sprintf("%03s.%03s.%03s.%03s", splitIp[0], splitIp[1], splitIp[2], splitIp[3])
+}
+func PaddedStringToIPV4(paddedIp string) string {
+	splitIp := strings.Split(paddedIp, ".")
+	if len(splitIp) == 4 {
+		return fmt.Sprintf("%s.%s.%s.%s", strings.TrimLeft(splitIp[0], "0"), strings.TrimLeft(splitIp[1], "0"), strings.TrimLeft(splitIp[2], "0"), strings.TrimLeft(splitIp[3], "0"))
+	} else {
+		return paddedIp
 	}
 }
