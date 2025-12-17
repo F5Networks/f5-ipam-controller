@@ -19,8 +19,9 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
-	"github.com/F5Networks/f5-ipam-controller/pkg/utils"
 	"os"
+
+	"github.com/F5Networks/f5-ipam-controller/pkg/utils"
 
 	log "github.com/F5Networks/f5-ipam-controller/pkg/vlogger"
 	_ "github.com/mattn/go-sqlite3"
@@ -162,11 +163,20 @@ func (store *DBStore) CreateTables() bool {
 
 func (store *DBStore) InsertIPs(ips []string, ipamLabel string) {
 	for _, ip := range ips {
-		err := store.executeStatement(
-			`INSERT INTO ipaddress_range(ipaddress, status, ipam_label, reference) VALUES (?, ?, ?, ?)`,
-			ip, AVAILABLE, ipamLabel, utils.RandomString(ReferenceLength))
-		if err != nil {
-			log.Errorf("[STORE] Unable to Insert row in Table 'ipaddress_range': %v", err)
+		if utils.IsIPV4Addr(ip) {
+			err := store.executeStatement(
+				`INSERT INTO ipaddress_range(ipaddress, status, ipam_label, reference) VALUES (?, ?, ?, ?)`,
+				utils.Ipv4ToPaddedString(ip), AVAILABLE, ipamLabel, utils.RandomString(ReferenceLength))
+			if err != nil {
+				log.Errorf("[STORE] Unable to Insert row in Table 'ipaddress_range': %v", err)
+			}
+		} else {
+			err := store.executeStatement(
+				`INSERT INTO ipaddress_range(ipaddress, status, ipam_label, reference) VALUES (?, ?, ?, ?)`,
+				ip, AVAILABLE, ipamLabel, utils.RandomString(ReferenceLength))
+			if err != nil {
+				log.Errorf("[STORE] Unable to Insert row in Table 'ipaddress_range': %v", err)
+			}
 		}
 	}
 }
@@ -189,6 +199,7 @@ func (store *DBStore) DisplayIPRecords() {
 		var ipamLabel string
 		var ref string
 		row.Scan(&ipaddress, &status, &ipamLabel, &ref)
+		ipaddress = utils.PaddedStringToIPV4(ipaddress)
 		log.Debugf("[STORE] %v %v %v %v", ipaddress, status, ipamLabel, ref)
 	}
 }
@@ -215,6 +226,7 @@ func (store *DBStore) AllocateIP(ipamLabel, reference string) string {
 	if err != nil {
 		log.Errorf("[STORE] Unable to update row in Table 'ipaddress_range': %v", err)
 	}
+	ipaddress = utils.PaddedStringToIPV4(ipaddress)
 	return ipaddress
 }
 
@@ -242,6 +254,7 @@ func (store *DBStore) GetIPAddressFromARecord(ipamLabel, hostname string) string
 	} else if status == AVAILABLE {
 		return ""
 	}
+	ipaddress = utils.PaddedStringToIPV4(ipaddress)
 
 	return ipaddress
 }
@@ -264,11 +277,15 @@ func (store *DBStore) GetIPAddressFromReference(ipamLabel, reference string) str
 	if status == AVAILABLE {
 		return ""
 	}
+	ipaddress = utils.PaddedStringToIPV4(ipaddress)
 
 	return ipaddress
 }
 
 func (store *DBStore) ReleaseIP(ip string) {
+	if utils.IsIPV4Addr(ip) {
+		ip = utils.Ipv4ToPaddedString(ip)
+	}
 	deallocateIPSql := fmt.Sprintf("UPDATE ipaddress_range set status=%d, reference=\"%s\" where ipaddress=?",
 		AVAILABLE,
 		utils.RandomString(ReferenceLength),
@@ -281,6 +298,10 @@ func (store *DBStore) ReleaseIP(ip string) {
 }
 
 func (store *DBStore) CreateARecord(hostname, ipAddr string) bool {
+	if utils.IsIPV4Addr(ipAddr) {
+		ipAddr = utils.Ipv4ToPaddedString(ipAddr)
+	}
+
 	insertARecordSQL := `INSERT INTO a_records(ipaddress, hostname) VALUES (?, ?)`
 
 	err := store.executeStatement(insertARecordSQL, ipAddr, hostname)
@@ -292,6 +313,9 @@ func (store *DBStore) CreateARecord(hostname, ipAddr string) bool {
 }
 
 func (store *DBStore) DeleteARecord(hostname, ipAddr string) bool {
+	if utils.IsIPV4Addr(ipAddr) {
+		ipAddr = utils.Ipv4ToPaddedString(ipAddr)
+	}
 	deleteARecord := "DELETE FROM a_records WHERE ipaddress=? AND hostname=?"
 
 	err := store.executeStatement(deleteARecord, ipAddr, hostname)
