@@ -82,7 +82,7 @@ func (prov *IPAMProvider) Init(params Params) bool {
 				continue
 			}
 			if !strings.Contains(ipRange, rng) {
-				log.Warning("[PROV] Only appending to existing IP ranges is supported")
+				log.Warningf("[PROV] Only appending to existing IP ranges is supported. Label: %s, Existing Range: %s, New Range: %s", ipamLabel, rng, ipRange)
 				continue
 			}
 			// Exists and range changed, so remove range and add new range
