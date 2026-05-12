@@ -73,6 +73,6 @@ func (ms *MockDBStore) RemoveLabel(label string) bool {
 	return true
 }
 
-func (ms *MockDBStore) CleanUpLabel(label string) {
+func (ms *MockDBStore) CleanUpLabel(label string, ipRange string) {
 	ms.Data.CleanUpFlag = true
 }

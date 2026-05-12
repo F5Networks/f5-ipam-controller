@@ -67,7 +67,7 @@ func (prov *IPAMProvider) Init(params Params) bool {
 	for ipamLabel := range labelMap {
 		if _, ok := ipRangeMap[ipamLabel]; !ok {
 			// Remove all those labels from that are not present in the new ipRangeMap
-			prov.store.CleanUpLabel(ipamLabel)
+			prov.store.CleanUpLabel(ipamLabel, "")
 		}
 	}
 
@@ -81,8 +81,12 @@ func (prov *IPAMProvider) Init(params Params) bool {
 				prov.ipamLabels[ipamLabel] = true
 				continue
 			}
+			if !strings.Contains(ipRange, rng) {
+				log.Warningf("[PROV] Only appending to existing IP ranges is supported. Label: %s, Existing Range: %s, New Range: %s", ipamLabel, rng, ipRange)
+				continue
+			}
 			// Exists and range changed, so remove range and add new range
-			prov.store.CleanUpLabel(ipamLabel)
+			prov.store.CleanUpLabel(ipamLabel, ipRange)
 		}
 
 		var ips []string
