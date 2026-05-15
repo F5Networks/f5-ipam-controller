@@ -1,4 +1,4 @@
-FROM golang:1.23 as builder
+FROM golang:1.25.10 as builder
 
 ARG REPOPATH=$GOPATH/src/github.com/F5Networks/f5-ipam-controller
 ARG RUN_TESTS
@@ -16,7 +16,7 @@ RUN $REPOPATH/build-tools/rel-build.sh && \
     apt-get update && apt-get install -y go-md2man && \
 	go-md2man -in $REPOPATH/build-tools/help.md  -out /help.1
 
-FROM registry.redhat.io/ubi9/ubi-minimal
+FROM registry.redhat.io/ubi10/ubi-minimal
 
 LABEL name="f5networks/f5-ipam-controller" \
       maintainer="F5 Networks <automation_toolchain_pm@f5.com>" \

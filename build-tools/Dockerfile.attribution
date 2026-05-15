@@ -1,5 +1,6 @@
-FROM golang:1.15
+FROM golang:1.25.10
 COPY . .
-RUN apt-get update && apt-get install -y ruby bundler cmake pkg-config git libssl-dev libpng-dev && \
-    gem install licensee
+RUN apt-get update && apt-get install -y --no-install-recommends ruby bundler cmake pkg-config git libssl-dev libpng-dev && \
+    gem install licensee && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN $PWD/build-tools/attributions-generator.sh "$PWD/vendor"
