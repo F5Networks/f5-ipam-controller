@@ -46,7 +46,7 @@ COPY --from=builder "/help.1" /
 COPY LICENSE /licenses/
 
 RUN microdnf update -y && \
-    microdnf --enablerepo=ubi-9-baseos-rpms install --nodocs shadow-utils -y  && \
+    microdnf --enablerepo=ubi-10-baseos-rpms install --nodocs shadow-utils -y  && \
     adduser -u 1200 ctlr && \
     microdnf remove libsemanage shadow-utils -y && \
     microdnf clean all \
