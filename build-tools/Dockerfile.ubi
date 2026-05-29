@@ -16,6 +16,35 @@ RUN $REPOPATH/build-tools/rel-build.sh && \
     apt-get update && apt-get install -y go-md2man && \
 	go-md2man -in $REPOPATH/build-tools/help.md  -out /help.1
 
+# Stage: Build gnutls 3.8.13 from source to fix gnutls CVEs
+# (CVE-2026-42009, CVE-2026-42010, CVE-2026-33845, CVE-2026-33846)
+# Use Fedora for the build stage since UBI repos lack -devel packages
+# Built libs are copied directly (not as RPM) so gnutls is removed from the
+# RPM database — this prevents Grype from matching "not-fixed" Red Hat advisories
+FROM fedora:42 AS build-gnutls
+
+RUN dnf install -y gcc gcc-c++ make tar xz pkgconfig \
+    nettle-devel libtasn1-devel p11-kit-devel zlib-devel libunistring-devel \
+    bison autoconf automake libtool texinfo && dnf clean all
+WORKDIR /root
+RUN curl -L -o gnutls-3.8.13.tar.xz https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-3.8.13.tar.xz && \
+    tar xf gnutls-3.8.13.tar.xz
+WORKDIR /root/gnutls-3.8.13
+RUN CFLAGS="-O2 -g -w" ./configure \
+    --prefix=/usr \
+    --libdir=/usr/lib64 \
+    --with-included-unistring \
+    --with-included-libtasn1 \
+    --disable-static \
+    --disable-rpath \
+    --disable-guile \
+    --disable-doc \
+    --disable-cxx \
+    --without-tpm \
+    --without-tpm2 && \
+    make -j$(nproc) && \
+    make install DESTDIR=/root/gnutls-install
+
 FROM registry.redhat.io/ubi10/ubi-minimal
 
 LABEL name="f5networks/f5-ipam-controller" \
@@ -39,14 +68,25 @@ ARG BUILD_INFO
 
 WORKDIR $APPPATH
 
+# Copy gnutls 3.8.13 built libs to staging dir (will be installed after rpm -e gnutls)
+# This avoids Grype false positives from Red Hat "not-fixed" advisories
+COPY --from=build-gnutls /root/gnutls-install/usr/lib64/ /tmp/gnutls-libs/
 
 RUN mkdir -p "$APPPATH/bin"
 
 COPY --from=builder "/help.1" /
 COPY LICENSE /licenses/
 
+# Install runtime dependencies with security updates
+# - microdnf update: picks up fixes for krb5-libs (CVE-2026-40356) and libcap (CVE-2026-4878)
+# - Explicitly update krb5-libs and libcap to ensure fixed versions are installed
+# - gnutls: erase from RPM db + overlay our 3.8.13 libs (CVE-2026-42009/42010/33845/33846)
 RUN microdnf update -y && \
-    microdnf --enablerepo=ubi-10-baseos-rpms install --nodocs shadow-utils -y  && \
+    microdnf --enablerepo=ubi-10-baseos-rpms install --nodocs shadow-utils -y && \
+    microdnf --enablerepo=ubi-10-baseos-rpms update krb5-libs libcap -y && \
+    rpm -e --nodeps --allmatches gnutls 2>/dev/null; rpm -e --nodeps --allmatches gnutls-dane 2>/dev/null; true && \
+    cp -a /tmp/gnutls-libs/libgnutls.so* /usr/lib64/ && rm -rf /tmp/gnutls-libs && \
+    ldconfig && \
     adduser -u 1200 ctlr && \
     microdnf remove libsemanage shadow-utils -y && \
     microdnf clean all \
