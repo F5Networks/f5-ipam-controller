@@ -81,6 +81,9 @@ COPY LICENSE /licenses/
 # - microdnf update: picks up fixes for krb5-libs (CVE-2026-40356) and libcap (CVE-2026-4878)
 # - Explicitly update krb5-libs and libcap to ensure fixed versions are installed
 # - gnutls: erase from RPM db + overlay our 3.8.13 libs (CVE-2026-42009/42010/33845/33846)
+# - Remove shadow-utils and ALL its transitive dependencies after adduser to fix:
+#     CVE-2026-4105  (systemd-pam, Medium CVSS 6.7)
+#     CVE-2026-27456 (util-linux-core, Medium CVSS 4.7)
 RUN microdnf update -y && \
     microdnf --enablerepo=ubi-10-baseos-rpms install --nodocs shadow-utils -y && \
     microdnf --enablerepo=ubi-10-baseos-rpms update krb5-libs libcap -y && \
@@ -89,6 +92,12 @@ RUN microdnf update -y && \
     ldconfig && \
     adduser -u 1200 ctlr && \
     microdnf remove libsemanage shadow-utils -y && \
+    # Remove shadow-utils transitive deps that carry non-base CVEs:
+    # - systemd-pam: CVE-2026-4105 (Medium) - improper access control in systemd-machined
+    # - util-linux-core: CVE-2026-27456 (Medium) - TOCTOU race in mount with user,loop
+    rpm -e --nodeps --allmatches systemd-pam 2>/dev/null; true && \
+    rpm -e --nodeps --allmatches util-linux-core 2>/dev/null; true && \
+    rpm -e --nodeps --allmatches util-linux 2>/dev/null; true && \
     microdnf clean all \
     && echo "{\"version\": \"${BUILD_VERSION}\", \"build\": \"${BUILD_INFO}\"}" > $APPPATH/VERSION_BUILD.json \
     && chown -R ctlr "$APPPATH" && chmod -R 755 "$APPPATH"
