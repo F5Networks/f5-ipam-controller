@@ -45,56 +45,6 @@ RUN CFLAGS="-O2 -g -w" ./configure \
     make -j$(nproc) && \
     make install DESTDIR=/root/gnutls-install
 
-# Stage: Build curl 8.14.1 from source to fix curl CVEs
-# (CVE-2025-15079: Host verification bypass during SSH transfers)
-# Built libs are copied directly (not as RPM) so curl is removed from the
-# RPM database — this prevents Grype from matching "not-fixed" Red Hat advisories
-FROM fedora:42 AS build-curl
-
-RUN dnf install -y gcc gcc-c++ make tar xz pkgconfig \
-    openssl-devel zlib-devel libnghttp2-devel libidn2-devel \
-    autoconf automake libtool && dnf clean all
-WORKDIR /root
-RUN curl -L -o curl-8.14.1.tar.xz https://curl.se/download/curl-8.14.1.tar.xz && \
-    tar xf curl-8.14.1.tar.xz
-WORKDIR /root/curl-8.14.1
-RUN ./configure \
-    --prefix=/usr \
-    --libdir=/usr/lib64 \
-    --with-openssl \
-    --with-nghttp2 \
-    --with-libidn2 \
-    --enable-threaded-resolver \
-    --disable-static \
-    --disable-manual \
-    --disable-ldap \
-    --disable-ldaps && \
-    make -j$(nproc) && \
-    make install DESTDIR=/root/curl-install
-
-# Stage: Build OpenSSL 3.5.6 from source to fix openssl CVEs
-# (CVE-2026-28390: NULL pointer dereference in CMS EnvelopedData processing)
-# Built libs are copied directly (not as RPM) so openssl is removed from the
-# RPM database — this prevents Grype from matching "not-fixed" Red Hat advisories
-FROM fedora:42 AS build-openssl
-
-RUN dnf install -y gcc gcc-c++ make tar perl-FindBin perl-File-Compare \
-    perl-IPC-Cmd perl-File-Copy zlib-devel && dnf clean all
-WORKDIR /root
-RUN curl -L -o openssl-3.5.6.tar.gz https://github.com/openssl/openssl/releases/download/openssl-3.5.6/openssl-3.5.6.tar.gz && \
-    tar xf openssl-3.5.6.tar.gz
-WORKDIR /root/openssl-3.5.6
-RUN ./Configure \
-    --prefix=/usr \
-    --libdir=lib64 \
-    --openssldir=/etc/pki/tls \
-    shared \
-    zlib \
-    enable-ktls \
-    no-tests && \
-    make -j$(nproc) && \
-    make install DESTDIR=/root/openssl-install
-
 FROM registry.redhat.io/ubi10/ubi-minimal
 
 LABEL name="f5networks/f5-ipam-controller" \
@@ -118,12 +68,9 @@ ARG BUILD_INFO
 
 WORKDIR $APPPATH
 
-# Copy built libs to staging dir (will be installed after rpm -e removes old packages)
+# Copy gnutls 3.8.13 built libs to staging dir (will be installed after rpm -e gnutls)
 # This avoids Grype false positives from Red Hat "not-fixed" advisories
 COPY --from=build-gnutls /root/gnutls-install/usr/lib64/ /tmp/gnutls-libs/
-COPY --from=build-curl /root/curl-install/usr/lib64/ /tmp/curl-libs/
-COPY --from=build-curl /root/curl-install/usr/bin/curl /tmp/curl-bin/curl
-COPY --from=build-openssl /root/openssl-install/usr/lib64/ /tmp/openssl-libs/
 
 RUN mkdir -p "$APPPATH/bin"
 
@@ -131,32 +78,17 @@ COPY --from=builder "/help.1" /
 COPY LICENSE /licenses/
 
 # Install runtime dependencies with security updates
-# Fix the following CVEs by building from source and removing RPMs from the database:
-#   - CVE-2025-15079: curl 8.14.1 (Host verification bypass during SSH transfers)
-#   - CVE-2026-28390: openssl 3.5.6 (NULL pointer dereference in CMS EnvelopedData)
-#   - CVE-2026-48864: libsolv (Heap buffer overflow - remove from RPM db, only needed for microdnf)
-#   - gnutls 3.8.13: multiple CVEs (CVE-2026-42009/42010/33845/33846)
-# Remove shadow-utils and ALL its transitive dependencies after adduser to fix:
+# - microdnf update: picks up fixes for krb5-libs (CVE-2026-40356) and libcap (CVE-2026-4878)
+# - Explicitly update krb5-libs and libcap to ensure fixed versions are installed
+# - gnutls: erase from RPM db + overlay our 3.8.13 libs (CVE-2026-42009/42010/33845/33846)
+# - Remove shadow-utils and ALL its transitive dependencies after adduser to fix:
 #     CVE-2026-4105  (systemd-pam, Medium CVSS 6.7)
 #     CVE-2026-27456 (util-linux-core, Medium CVSS 4.7)
 RUN microdnf update -y && \
     microdnf --enablerepo=ubi-10-baseos-rpms install --nodocs shadow-utils -y && \
     microdnf --enablerepo=ubi-10-baseos-rpms update krb5-libs libcap -y && \
-    # Remove gnutls from RPM db and install our 3.8.13 build
     rpm -e --nodeps --allmatches gnutls 2>/dev/null; rpm -e --nodeps --allmatches gnutls-dane 2>/dev/null; true && \
     cp -a /tmp/gnutls-libs/libgnutls.so* /usr/lib64/ && rm -rf /tmp/gnutls-libs && \
-    # Remove curl/libcurl from RPM db and install our 8.14.1 build (CVE-2025-15079)
-    rpm -e --nodeps --allmatches curl 2>/dev/null; rpm -e --nodeps --allmatches libcurl-minimal 2>/dev/null; rpm -e --nodeps --allmatches libcurl 2>/dev/null; true && \
-    cp -a /tmp/curl-libs/libcurl.so* /usr/lib64/ && \
-    cp -a /tmp/curl-bin/curl /usr/bin/curl 2>/dev/null; true && \
-    rm -rf /tmp/curl-libs /tmp/curl-bin && \
-    # Remove openssl-libs from RPM db and install our 3.5.6 build (CVE-2026-28390)
-    rpm -e --nodeps --allmatches openssl-libs 2>/dev/null; rpm -e --nodeps --allmatches openssl 2>/dev/null; true && \
-    cp -a /tmp/openssl-libs/libssl.so* /usr/lib64/ && \
-    cp -a /tmp/openssl-libs/libcrypto.so* /usr/lib64/ && \
-    rm -rf /tmp/openssl-libs && \
-    # Remove libsolv from RPM db (CVE-2026-48864 - only needed for microdnf, not runtime)
-    rpm -e --nodeps --allmatches libsolv 2>/dev/null; true && \
     ldconfig && \
     adduser -u 1200 ctlr && \
     microdnf remove libsemanage shadow-utils -y && \
