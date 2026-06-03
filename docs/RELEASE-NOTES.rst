@@ -1,5 +1,20 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
+0.1.13
+-------------
+Bug Fixes
+`````````
+* SR - Fix added for issues with updating FIC range
+
+Vulnerability Fixes
+```````````````````
+CVE-2026-33845, CVE-2026-33846, CVE-2026-42011, CVE-2026-29111, CVE-2026-42012, CVE-2026-42013, CVE-2026-42009,
+CVE-2026-42010, CVE-2026-5260, CVE-2024-12243, CVE-2024-28834, CVE-2025-14087, CVE-2025-15281, CVE-2026-2100,
+CVE-2026-40355, CVE-2026-40356, CVE-2026-4046, CVE-2026-42014, CVE-2026-4437, CVE-2026-4438, CVE-2026-4878,
+CVE-2024-28835, CVE-2025-14512, CVE-2025-4598, CVE-2026-3833, CVE-2026-42015, CVE-2026-28390, CVE-2026-48864,
+CVE-2026-3832, CVE-2025-15079
+
+
 0.1.12
 ------------
 Added Functionality
