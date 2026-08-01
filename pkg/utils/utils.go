@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -58,9 +59,17 @@ func Ipv4ToPaddedString(ip string) string {
 }
 func PaddedStringToIPV4(paddedIp string) string {
 	splitIp := strings.Split(paddedIp, ".")
-	if len(splitIp) == 4 {
-		return fmt.Sprintf("%s.%s.%s.%s", strings.TrimLeft(splitIp[0], "0"), strings.TrimLeft(splitIp[1], "0"), strings.TrimLeft(splitIp[2], "0"), strings.TrimLeft(splitIp[3], "0"))
-	} else {
+	if len(splitIp) != 4 {
 		return paddedIp
 	}
+	octets := make([]string, 4)
+	for i, o := range splitIp {
+		n, err := strconv.Atoi(o)
+		if err != nil {
+			// not a padded numeric octet; return input unchanged
+			return paddedIp
+		}
+		octets[i] = strconv.Itoa(n) // "000" -> "0", "082" -> "82"
+	}
+	return strings.Join(octets, ".")
 }
