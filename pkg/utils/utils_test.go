@@ -133,9 +133,9 @@ func TestPaddedStringToIPV4_IPv6PassThrough(t *testing.T) {
 		"2001:db8:85a3::8a2e:370:7334",
 		"::1",
 		"fe80::1",
-		"10.65.82",       // too few octets
-		"10.65.82.abc",   // non-numeric octet
-		"",               // empty
+		"10.65.82",     // too few octets
+		"10.65.82.abc", // non-numeric octet
+		"",             // empty
 	} {
 		if got := PaddedStringToIPV4(ip); got != ip {
 			t.Errorf("PaddedStringToIPV4(%q) = %q, want unchanged", ip, got)
