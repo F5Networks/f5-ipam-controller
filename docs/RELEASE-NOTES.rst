@@ -1,6 +1,22 @@
 Release Notes for F5 IPAM Controller for Kubernetes & OpenShift
 =======================================================================
-0.1.13.1
+FIC 0.1.14
+-------------
+
+Added Functionality
+```````````````````
+* Operator support for OpenShift 4.19, 4.20, 4.21, 4.22, and 5.0
+
+Bug Fixes
+````````````
+* Fixed IP address formatting during allocation when an IPv4 address contains a zero-valued octet (for example, ``10.0.0.4``).
+
+Vulnerability Fixes
+```````````````````
+CVE-2026-111943, CVE-2026-78661, CVE-2026-78667, CVE-2026-78669, CVE-2026-97031, CVE-2026-56866, CVE-2026-78659, CVE-2026-78660, CVE-2026-78663, CVE-2026-94439, CVE-2026-94440, CVE-2026-94448, CVE-2026-97030, CVE-2026-97032, CVE-2026-97045, CVE-2026-56857
+
+
+FIC 0.1.13.1
 -------------
 
 Vulnerability Fixes
@@ -8,7 +24,7 @@ Vulnerability Fixes
 CVE-2026-39828, CVE-2026-39829, CVE-2026-39830, CVE-2026-39831, CVE-2026-39832, CVE-2026-39833, CVE-2026-39834, CVE-2026-39835, CVE-2026-39827, CVE-2026-42508, CVE-2026-46595, CVE-2026-46597, CVE-2026-46598, CVE-2026-56854, CVE-2026-56855, CVE-2026-78662, CVE-2026-27145, CVE-2026-33818, CVE-2026-39822, CVE-2026-42504, CVE-2026-42505, CVE-2026-42507, CVE-2026-56853, CVE-2026-56858, CVE-2026-56859, CVE-2026-56860, CVE-2026-56862, CVE-2026-25680, CVE-2026-25681, CVE-2026-27136, CVE-2026-33814, CVE-2026-39821, CVE-2026-42502, CVE-2026-42506, CVE-2026-46600, CVE-2026-56852, CVE-2026-39824
 
 
-0.1.13
+FIC 0.1.13
 -------------
 Bug Fixes
 `````````
@@ -23,7 +39,7 @@ CVE-2024-28835, CVE-2025-14512, CVE-2025-4598, CVE-2026-3833, CVE-2026-42015, CV
 CVE-2026-3832, CVE-2025-15079
 
 
-0.1.12
+FIC 0.1.12
 ------------
 Added Functionality
 ```````````````````
@@ -43,7 +59,7 @@ CVE-2025-4802, CVE-2025-49794, CVE-2025-49796, CVE-2025-5702, CVE-2025-6021
 
 
 
-0.1.11
+FIC 0.1.11
 -------------
 
 Added Functionality
@@ -52,7 +68,7 @@ Added Functionality
     * Support for namespace to watch the multiple namespaces for IPAM CRD
     * Operator support for OpenShift 4.16
 
-0.1.10
+FIC 0.1.10
 ``````````````````````````
 
 Vulnerability Fixes
@@ -66,7 +82,7 @@ Known Issues
 `````````````
 CVE-2024-2961
 
-0.1.9
+FIC 0.1.9
 -------------
 Added Functionality
 ```````````````````
@@ -78,7 +94,7 @@ Bug Fixes
 * `Issue 2747 <https://github.com/F5Networks/k8s-bigip-ctlr/issues/2747>`_ Fix to persist IP addresses after CIS restart
 
 
-0.1.8
+FIC 0.1.8
 -------------
 Added Functionality
 ```````````````````
@@ -92,13 +108,13 @@ Known Issues
 `````````````
 * Appending new pool to existing range using the comma operator triggers FIC to reassign the newIP with new IP pool for the corresponding ipamLabel domains/keys
 
-0.1.7
+FIC 0.1.7
 ------------
 Bug Fixes
 `````````
 * :issues:`98` IPAM Storage initialisation handled properly.
 
-0.1.6
+FIC 0.1.6
 ------------
 Added Functionality
 ````````````
@@ -106,7 +122,7 @@ Added Functionality
     - IPv6 address range support with default f5-ip-provider.
 
 
-0.1.5
+FIC 0.1.5
 ------------
 Added Functionality
 ```````````````````
@@ -137,7 +153,7 @@ Migration from 0.1.4
 
 
 
-0.1.4
+FIC 0.1.4
 ------------
 Added Functionality
 ```````````````````
@@ -150,7 +166,7 @@ Known Issues
     * Update ip-range is not working as expected
     * TransportServer CR and Service Type LoadBalancer are not supported
 
-0.1.3
+FIC 0.1.3
 -------------
 Bug Fixes
 `````````
@@ -159,7 +175,7 @@ Bug Fixes
 * Deleting resources releases IP address along with clearing corresponding spec entries.
 
 
-0.1.2
+FIC 0.1.2
 -------------
 Added Functionality
 ```````````````````
